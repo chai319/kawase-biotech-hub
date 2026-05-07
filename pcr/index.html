@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>DNA Detective V3 — エクレア消失事件</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--bg:#0a0e1a;--bg2:#111827;--cyan:#00e5ff;--green:#76ff03;--magenta:#e040fb;--red:#ff1744;--gold:#ffd600;--text:#e0e0e0;--text2:#9e9e9e;--glass:rgba(17,24,39,.85)}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;min-height:100vh;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+h1,h2,h3,.label{font-family:'Orbitron','Noto Sans JP',sans-serif}
+.screen{display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:20px;animation:fadeIn .6s}
+.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+@keyframes glow{0%,100%{text-shadow:0 0 10px var(--cyan),0 0 40px rgba(0,229,255,.3)}50%{text-shadow:0 0 20px var(--cyan),0 0 60px rgba(0,229,255,.5)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.btn{font-family:'Orbitron',sans-serif;padding:14px 36px;border:2px solid var(--cyan);background:transparent;color:var(--cyan);font-size:1rem;cursor:pointer;border-radius:10px;transition:all .2s;text-transform:uppercase;letter-spacing:2px;min-height:52px}
+.btn:active{transform:scale(.95);background:rgba(0,229,255,.2)}
+.btn.primary{background:linear-gradient(135deg,rgba(0,229,255,.2),rgba(118,255,3,.2));border-color:var(--green);color:var(--green)}
+.btn.danger{border-color:var(--red);color:var(--red)}
+.card{background:var(--glass);border:1px solid rgba(0,229,255,.2);border-radius:16px;padding:24px;backdrop-filter:blur(10px)}
+.badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:700;letter-spacing:1px}
+.badge.cyan{background:rgba(0,229,255,.15);color:var(--cyan);border:1px solid rgba(0,229,255,.3)}
+.badge.green{background:rgba(118,255,3,.15);color:var(--green);border:1px solid rgba(118,255,3,.3)}
+.badge.red{background:rgba(255,23,68,.15);color:var(--red);border:1px solid rgba(255,23,68,.3)}
+.progress-bar{width:100%;height:8px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden}
+.progress-bar .fill{height:100%;border-radius:4px;transition:width .5s ease;background:linear-gradient(90deg,var(--cyan),var(--green))}
+.score-bar{display:inline-block;padding:6px 16px;border-radius:20px;font-family:'Orbitron',sans-serif;font-size:.9rem;background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.3);color:var(--cyan);margin:4px 0}
+#particles-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.content{position:relative;z-index:1;width:100%;max-width:900px;margin:0 auto}
+/* Title */
+.logo{font-size:clamp(2rem,5vw,3.5rem);font-weight:900;background:linear-gradient(135deg,var(--cyan),var(--magenta));-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:glow 3s infinite;margin-bottom:8px}
+/* PCR Layout */
+.pcr-layout{display:grid;grid-template-columns:1fr 1fr;gap:24px;width:100%}
+.temp-gauge{width:220px;height:220px;position:relative;margin:0 auto}
+.temp-gauge canvas{width:220px;height:220px}
+.temp-display{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.temp-display .val{font-family:'Orbitron',sans-serif;font-size:2.2rem;font-weight:900}
+.temp-display .unit{font-size:.9rem;color:var(--text2)}
+.step-indicator{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap;justify-content:center}
+.step-indicator .step{padding:8px 14px;border-radius:8px;font-size:.8rem;border:1px solid rgba(255,255,255,.15);color:var(--text2);transition:all .3s}
+.step-indicator .step.active{border-color:var(--cyan);color:var(--cyan);background:rgba(0,229,255,.1)}
+.step-indicator .step.done{border-color:var(--green);color:var(--green);background:rgba(118,255,3,.1)}
+.dna-canvas-wrap{background:rgba(0,0,0,.3);border-radius:16px;border:1px solid rgba(0,229,255,.15);overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#dna-canvas{width:100%;height:320px}
+.info-popup{background:var(--glass);border:1px solid rgba(0,229,255,.3);border-radius:12px;padding:16px;font-size:.85rem;line-height:1.7;margin-top:8px}
+.info-popup .title{color:var(--cyan);font-weight:700;margin-bottom:4px}
+/* Electro Crane */
+.electro-layout{display:grid;grid-template-columns:1fr 1fr;gap:24px;width:100%}
+.crane-area{position:relative;width:100%;height:420px;background:rgba(0,0,0,.2);border:1px solid rgba(0,229,255,.15);border-radius:16px;overflow:hidden}
+.crane-rail{position:absolute;top:0;left:0;width:100%;height:30px;background:rgba(255,255,255,.05);border-bottom:2px solid rgba(255,255,255,.15)}
+#pipette-arm{position:absolute;top:30px;width:4px;height:60px;background:linear-gradient(180deg,#888,#ccc);transition:left .05s linear}
+#pipette-tip{position:absolute;top:86px;width:12px;height:16px;background:#ddd;border-radius:0 0 3px 3px;margin-left:-4px;transition:left .05s linear}
+.pipette-sample{position:absolute;top:96px;width:8px;height:8px;border-radius:50%;margin-left:-2px;transition:left .05s linear,opacity .3s}
+.tube-rack{position:absolute;bottom:0;right:0;width:50%;height:130px;display:flex;justify-content:space-around;align-items:flex-end;padding:10px 5px}
+.tube{width:28px;height:65px;border-radius:0 0 14px 14px;border:2px solid rgba(255,255,255,.3);position:relative;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;cursor:pointer}
+.tube .liquid{width:100%;position:absolute;bottom:0;border-radius:0 0 12px 12px;transition:height .3s}
+.tube-label{font-size:.55rem;color:var(--text2);text-align:center;margin-top:4px;white-space:nowrap}
+.gel-panel{position:absolute;bottom:0;left:0;width:48%;height:330px}
+.gel-container{background:#1a1a2e;border:2px solid rgba(0,229,255,.2);border-radius:12px;padding:10px;height:100%;position:relative}
+.electrode{text-align:center;font-size:.7rem;padding:4px;border-radius:4px;font-weight:700;letter-spacing:1px}
+.electrode.neg{color:var(--red);border:1px solid rgba(255,23,68,.3);background:rgba(255,23,68,.05)}
+.electrode.pos{color:var(--green);border:1px solid rgba(118,255,3,.3);background:rgba(118,255,3,.05)}
+.gel{width:100%;height:250px;background:linear-gradient(180deg,rgba(200,220,255,.08),rgba(200,220,255,.03));border-radius:6px;position:relative;overflow:hidden;margin:5px 0}
+.gel .well{width:30px;height:8px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.15);border-radius:2px;position:absolute;top:8px}
+.gel .well.loaded{border-color:var(--cyan)}
+.gel .band{position:absolute;height:4px;border-radius:2px;opacity:0;transition:opacity .5s}
+.gel .band.visible{opacity:1}
+.gel-labels{display:flex;justify-content:space-around;font-size:.55rem;color:var(--text2)}
+.finish-line{position:absolute;bottom:30px;left:0;width:100%;height:2px;background:var(--red);opacity:0}
+/* Detective */
+.gel-compare{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:16px 0}
+.gel-compare .panel{text-align:center}
+.suspect-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
+.suspect-card{background:var(--glass);border:2px solid rgba(255,255,255,.1);border-radius:12px;padding:12px;text-align:center;cursor:pointer;transition:all .3s}
+.suspect-card:active{transform:scale(.97)}
+.suspect-card.selected{border-color:var(--gold);box-shadow:0 0 20px rgba(255,214,0,.3)}
+.suspect-card.correct{border-color:var(--green);box-shadow:0 0 20px rgba(118,255,3,.4)}
+.suspect-card.wrong{border-color:var(--red);box-shadow:0 0 20px rgba(255,23,68,.4)}
+.suspect-card .avatar{font-size:2.5rem;margin-bottom:4px}
+.suspect-card .name{font-size:.85rem;font-weight:700}
+.mini-gel{width:100%;height:200px;background:linear-gradient(180deg,rgba(200,220,255,.08),rgba(200,220,255,.03));border-radius:8px;position:relative;border:1px solid rgba(255,255,255,.1);overflow:hidden}
+.mini-gel .band{position:absolute;height:3px;border-radius:2px}
+/* Results */
+.review-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px 0;width:100%}
+.review-item{text-align:center;padding:16px;border-radius:12px;background:var(--glass);border:1px solid rgba(255,255,255,.1)}
+.review-item .rv-label{font-size:.75rem;color:var(--text2);margin-bottom:4px}
+.review-item .rv-val{font-family:'Orbitron',sans-serif;font-size:1.3rem;font-weight:700}
+/* Tutorial */
+.tutorial-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);z-index:100;display:flex;align-items:center;justify-content:center;animation:fadeIn .4s;padding:20px}
+.tutorial-box{max-width:650px;padding:28px;border-radius:20px;background:var(--bg2);border:1px solid rgba(0,229,255,.3);text-align:center;max-height:90vh;overflow-y:auto}
+.tutorial-box h2{color:var(--cyan);margin-bottom:16px;font-size:1.2rem}
+.tutorial-box p{line-height:1.8;margin-bottom:12px;font-size:.9rem}
+.tutorial-box .steps{text-align:left;margin:12px 0}
+.tutorial-box .steps .st{display:flex;align-items:flex-start;gap:12px;margin:8px 0;padding:10px;border-radius:8px;background:rgba(0,229,255,.05)}
+.tutorial-box .steps .st .num{font-family:'Orbitron',sans-serif;color:var(--cyan);font-weight:700;font-size:1rem;min-width:24px}
+.tutorial-box .steps .st .desc{font-size:.85rem;line-height:1.6}
+.tutorial-box .temp{color:var(--gold);font-weight:700}
+/* Responsive */
+@media(max-width:768px){
+.pcr-layout,.electro-layout,.gel-compare{grid-template-columns:1fr!important}
+.suspect-grid{grid-template-columns:repeat(2,1fr)}
+.review-grid{grid-template-columns:1fr 1fr}
+.crane-area{height:500px}
+}
+@media(min-width:768px) and (max-width:1024px){
+.content{max-width:95%;padding:0 16px}
+.btn{padding:16px 40px;font-size:1.05rem;min-height:54px}
+.suspect-card{padding:16px;min-height:90px}
+.suspect-card .avatar{font-size:3rem}
+}
+</style>
+</head>
+<body>
+<canvas id="particles-bg"></canvas>
+
+<!-- TITLE / OPENING -->
+<div id="title" class="screen active">
+<div class="content" style="text-align:center">
+<div style="margin-bottom:20px;font-size:4rem;animation:float 3s infinite">🧬</div>
+<h1 class="logo">DNA DETECTIVE</h1>
+<p style="color:var(--text2);margin-bottom:24px;letter-spacing:3px;font-size:clamp(.8rem,2vw,1.1rem)">エクレア消失事件</p>
+<div class="card" style="text-align:left;max-width:650px;margin:0 auto 24px">
+<p style="line-height:2;font-size:.95rem">ある日の昼休み——。<br>河瀬高校の職員室の冷蔵庫に保管されていた、<span style="color:var(--cyan);font-weight:700">クボカワ先生のエクレア</span>が忽然と姿を消した。</p>
+<p style="line-height:2;font-size:.95rem;margin-top:12px">現場にはエクレアの袋の破片と、<span style="color:var(--magenta);font-weight:700">微量の唾液</span>が残されていた！</p>
+<p style="line-height:2;font-size:.95rem;margin-top:12px">容疑者は、その時間帯に職員室に出入りしていた<span style="color:var(--gold);font-weight:700">4名の教職員</span>。</p>
+<div style="display:flex;gap:16px;margin:20px 0;flex-wrap:wrap;justify-content:center">
+<div style="text-align:center;padding:12px;border:1px solid rgba(0,229,255,.2);border-radius:12px;width:120px;background:rgba(0,229,255,.05)"><div style="font-size:2rem;margin-bottom:4px">🔬</div><strong>PCR法</strong><div style="font-size:.75rem;color:var(--text2)">DNAを増幅</div></div>
+<div style="text-align:center;padding:12px;border:1px solid rgba(0,229,255,.2);border-radius:12px;width:120px;background:rgba(0,229,255,.05)"><div style="font-size:2rem;margin-bottom:4px">⚡</div><strong>電気泳動</strong><div style="font-size:.75rem;color:var(--text2)">DNAを分離</div></div>
+<div style="text-align:center;padding:12px;border:1px solid rgba(0,229,255,.2);border-radius:12px;width:120px;background:rgba(0,229,255,.05)"><div style="font-size:2rem;margin-bottom:4px">🔍</div><strong>DNA鑑定</strong><div style="font-size:.75rem;color:var(--text2)">犯人を特定</div></div>
+</div>
+<p style="text-align:center;color:var(--cyan);font-weight:700;font-size:1rem">科学の力で、エクレア泥棒を追い詰めろ！</p>
+</div>
+<button class="btn primary" onclick="startPCR()">▶ MISSION START</button>
+</div>
+</div>
+
+<!-- PCR GAME -->
+<div id="pcr-game" class="screen">
+<div class="content">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+<div><span class="badge cyan">PHASE 1</span> <span style="margin-left:8px;font-weight:700">PCR増幅</span></div>
+<div class="score-bar">SCORE: <span id="pcr-score">0</span></div>
+</div>
+<div class="pcr-layout">
+<div class="card" style="text-align:center">
+<h3 style="font-size:.9rem;color:var(--cyan);margin-bottom:8px">サーマルサイクラー</h3>
+<div class="step-indicator" id="step-ind">
+<div class="step active">① 変性</div>
+<div class="step">② ｱﾆｰﾘﾝｸﾞ</div>
+<div class="step">③ 伸長</div>
+</div>
+<div class="temp-gauge"><canvas id="gauge-cv" width="220" height="220"></canvas>
+<div class="temp-display"><div class="val" id="temp-val">25</div><div class="unit">℃</div></div>
+</div>
+<p style="font-size:.8rem;color:var(--text2);margin:10px 0">ターゲット範囲でタップして止めろ！</p>
+<button class="btn" id="stop-btn" onclick="pcrStop()" style="padding:12px 40px;font-size:1rem;animation:pulse 1.5s infinite">🎯 STOP!!</button>
+<div style="display:flex;align-items:center;gap:20px;justify-content:center;margin-top:12px">
+<div><span style="font-size:.7rem;color:var(--text2)">サイクル</span><div style="font-family:'Orbitron';font-size:1.5rem;font-weight:700;color:var(--cyan)" id="cycle-num">1</div></div>
+<div><span style="font-size:.7rem;color:var(--text2)">DNA数</span><div style="font-family:'Orbitron';font-size:1.5rem;font-weight:700;color:var(--green)" id="dna-count">1</div></div>
+</div>
+<div class="info-popup" id="pcr-info"><div class="title">💡 ヒント</div><div id="pcr-hint">針が動きます。ターゲット範囲に入ったらSTOP！</div></div>
+</div>
+<div class="dna-canvas-wrap card">
+<canvas id="dna-canvas" width="400" height="320"></canvas>
+<div style="font-size:.75rem;color:var(--text2);padding:8px" id="dna-label">二重鎖DNA</div>
+</div>
+</div>
+<div class="progress-bar" style="margin-top:16px"><div class="fill" id="pcr-progress" style="width:0%"></div></div>
+</div>
+</div>
+
+<!-- ELECTRO GAME -->
+<div id="electro-game" class="screen">
+<div class="content">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+<div><span class="badge green">PHASE 2</span> <span style="margin-left:8px;font-weight:700">電気泳動</span></div>
+<div class="score-bar">SCORE: <span id="electro-score">0</span></div>
+</div>
+<div class="card" style="padding:12px; width:100%">
+<h3 style="font-size:.85rem;color:var(--cyan);margin-bottom:8px">ピペット操作 ＆ ゲル投入</h3>
+<div class="crane-area" id="crane-area" style="height: 380px;">
+<div class="crane-rail"></div>
+<div id="pipette-arm"></div>
+<div id="pipette-tip"></div>
+<div class="pipette-sample" id="pipette-sample" style="opacity:0"></div>
+
+<!-- Left: Gel -->
+<div style="position:absolute; bottom:10px; left:2%; width:46%; height:280px; display:flex; flex-direction:column;">
+<div class="electrode neg" id="neg-electrode" style="margin-bottom:5px">⊖ 陰極（−）</div>
+<div class="gel" id="gel" style="flex:1; margin:0;"></div>
+<div class="gel-labels" id="gel-labels" style="margin-top:5px;"></div>
+<div class="electrode pos" id="pos-electrode" style="margin-top:5px">⊕ 陽極（+）</div>
+<div class="finish-line" id="finish-line" style="bottom: 40px; width: 46%; left: 2%;"></div>
+</div>
+
+<!-- Right: Tubes -->
+<div class="tube-rack" id="tube-rack" style="right:2%; width:46%; top:90px; bottom:auto; align-items:flex-start; height:auto;"></div>
+
+</div>
+<div id="electro-msg" style="font-size:.85rem;line-height:1.7;margin-top:10px;text-align:center;color:var(--text2)">チューブをタップしてサンプルを吸い取ろう！</div>
+<div style="text-align:center;margin-top:12px">
+<button class="btn" id="crane-btn" onclick="craneAction()">TAP!</button>
+</div>
+</div>
+<!-- Quiz phase (hidden) -->
+<div id="electro-quiz" style="display:none;text-align:center;margin-top:16px"></div>
+<!-- Polarity phase (hidden) -->
+<div id="polarity-phase" class="card" style="display:none;text-align:center;margin-top:16px">
+<h3 style="color:var(--gold);font-size:1.1rem;margin-bottom:12px">⚡ 究極の選択！！</h3>
+<p style="font-size:.9rem;line-height:1.8;margin-bottom:16px">DNAは<strong style="color:var(--red)">負（−）の電荷</strong>を持っています。<br>DNAを泳動させるには、どちらの極性が正しい？</p>
+<div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+<button class="btn primary" onclick="selectPolarity(true)" style="flex:1;max-width:250px">上が ⊖マイナス<br>下が ⊕プラス</button>
+<button class="btn danger" onclick="selectPolarity(false)" style="flex:1;max-width:250px">上が ⊕プラス<br>下が ⊖マイナス</button>
+</div>
+</div>
+<!-- Run phase (hidden) -->
+<div id="run-phase" class="card" style="display:none;text-align:center;margin-top:16px">
+<p style="font-size:.9rem;margin-bottom:12px;color:var(--gold)">⚡ 泳動中！ バンドが分離しています...</p>
+<p style="font-size:.85rem;color:var(--text2);margin-bottom:16px">赤いラインの手前でタイミングよく電源を切ってください！</p>
+<button class="btn danger" onclick="stopRunning()" style="padding:16px 48px;font-size:1.1rem;animation:pulse 1s infinite">🔌 電源OFF！</button>
+</div>
+<div class="progress-bar" style="margin-top:16px"><div class="fill" id="electro-progress" style="width:0%"></div></div>
+</div>
+</div>
+
+<!-- DETECTIVE -->
+<div id="detective" class="screen">
+<div class="content">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+<div><span class="badge red">FINAL PHASE</span> <span style="margin-left:8px;font-weight:700">犯人特定</span></div>
+<div class="score-bar">SCORE: <span id="det-score">0</span></div>
+</div>
+<div id="cases-wrap"></div>
+</div>
+</div>
+
+<!-- RESULTS -->
+<div id="results" class="screen">
+<div class="content" style="text-align:center">
+<h2 style="font-size:1.1rem;color:var(--text2);letter-spacing:4px;margin-bottom:8px">MISSION COMPLETE</h2>
+<div style="font-size:3rem;margin:12px 0;letter-spacing:8px" id="stars">⭐⭐⭐</div>
+<div style="font-family:'Orbitron';font-size:3rem;font-weight:900;background:linear-gradient(135deg,var(--cyan),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent" id="final-score">0</div>
+<p style="color:var(--text2);margin:4px 0 20px">TOTAL SCORE</p>
+<div class="review-grid">
+<div class="review-item"><div class="rv-label">PCR増幅</div><div class="rv-val" id="rv-pcr" style="color:var(--cyan)">0</div></div>
+<div class="review-item"><div class="rv-label">電気泳動</div><div class="rv-val" id="rv-electro" style="color:var(--green)">0</div></div>
+<div class="review-item"><div class="rv-label">DNA鑑定</div><div class="rv-val" id="rv-det" style="color:var(--magenta)">0</div></div>
+</div>
+<div class="card" style="text-align:left;margin:20px 0">
+<h3 style="font-size:.9rem;color:var(--cyan);margin-bottom:12px">📚 学習まとめ</h3>
+<div style="font-size:.85rem;line-height:1.8" id="review-text"></div>
+</div>
+<button class="btn primary" onclick="location.reload()">🔄 もう一度プレイ</button>
+</div>
+</div>
+
+<script>
+// ===== GAME STATE =====
+const G={score:0,pcrScore:0,electroScore:0,detScore:0,pcrCycle:1,pcrStep:0,dnaCount:1,screen:'title',totalCases:3,currentCase:0,selectedSuspect:-1};
+const STEPS=[
+{name:'変性',target:95,range:[92,98],color:'#ff1744',hint:'95℃付近で止めろ！\nDNAの水素結合が切れて二重鎖がほどけます（変性）。'},
+{name:'ｱﾆｰﾘﾝｸﾞ',target:57,range:[53,62],color:'#00e5ff',hint:'55〜60℃で止めろ！\nプライマーが相補的な配列に結合します。'},
+{name:'伸長',target:72,range:[68,76],color:'#76ff03',hint:'72℃付近で止めろ！\n耐熱性DNAポリメラーゼが新しい鎖を合成します。'}
+];
+const SAMPLE_NAMES=['証拠','容疑者A','容疑者B','容疑者C','マーカー'];
+const SAMPLE_COLORS=['#ff1744','#e040fb','#76ff03','#ffd600','#ffffff'];
+const CASES=[
+{difficulty:'Easy',criminal:1,scene:[22,45,68,85],suspects:[
+{name:'体育の佐藤先生',avatar:'🏃‍♂️',bands:[22,48,65,85]},
+{name:'数学の田中先生',avatar:'👨‍🏫',bands:[22,45,68,85]},
+{name:'英語の伊藤先生',avatar:'👩‍🏫',bands:[25,50,70,80]},
+{name:'音楽の鈴木先生',avatar:'👩‍🎤',bands:[30,42,68,90]}]},
+{difficulty:'Normal',criminal:2,scene:[15,28,42,58,73,88],suspects:[
+{name:'体育の佐藤先生',avatar:'🏃‍♂️',bands:[15,30,42,60,73,88]},
+{name:'数学の田中先生',avatar:'👨‍🏫',bands:[18,28,45,58,70,88]},
+{name:'英語の伊藤先生',avatar:'👩‍🏫',bands:[15,28,42,58,73,88]},
+{name:'音楽の鈴木先生',avatar:'👩‍🎤',bands:[15,28,42,55,73,85]}]},
+{difficulty:'Hard',criminal:0,scene:[12,22,35,48,58,67,78,90],suspects:[
+{name:'体育の佐藤先生',avatar:'🏃‍♂️',bands:[12,22,35,48,58,67,78,90]},
+{name:'数学の田中先生',avatar:'👨‍🏫',bands:[12,24,35,48,58,67,80,90]},
+{name:'英語の伊藤先生',avatar:'👩‍🏫',bands:[14,22,35,48,58,65,78,90]},
+{name:'音楽の鈴木先生',avatar:'👩‍🎤',bands:[12,22,35,50,58,67,78,88]}]}
+];
+// ===== AUDIO =====
+const audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+function playSound(type){
+audioCtx.resume();
+if(type==='success'){
+const o1=audioCtx.createOscillator(),g1=audioCtx.createGain();
+o1.connect(g1);g1.connect(audioCtx.destination);o1.type='sine';
+o1.frequency.setValueAtTime(523,audioCtx.currentTime);
+o1.frequency.setValueAtTime(659,audioCtx.currentTime+0.1);
+o1.frequency.setValueAtTime(784,audioCtx.currentTime+0.2);
+g1.gain.setValueAtTime(0.15,audioCtx.currentTime);
+g1.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+0.5);
+o1.start();o1.stop(audioCtx.currentTime+0.5);
+}else if(type==='fail'){
+const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+o.connect(g);g.connect(audioCtx.destination);o.type='sawtooth';
+o.frequency.setValueAtTime(200,audioCtx.currentTime);
+o.frequency.linearRampToValueAtTime(100,audioCtx.currentTime+0.5);
+g.gain.setValueAtTime(0.12,audioCtx.currentTime);
+g.gain.linearRampToValueAtTime(0,audioCtx.currentTime+0.5);
+o.start();o.stop(audioCtx.currentTime+0.5);
+}else if(type==='click'){
+const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+o.connect(g);g.connect(audioCtx.destination);o.type='sine';
+o.frequency.setValueAtTime(1000,audioCtx.currentTime);
+g.gain.setValueAtTime(0.08,audioCtx.currentTime);
+g.gain.linearRampToValueAtTime(0,audioCtx.currentTime+0.06);
+o.start();o.stop(audioCtx.currentTime+0.06);
+}}
+// ===== PARTICLES =====
+const pCV=document.getElementById('particles-bg'),pCx=pCV.getContext('2d');let pts=[];
+function initP(){pCV.width=innerWidth;pCV.height=innerHeight;pts=[];for(let i=0;i<40;i++)pts.push({x:Math.random()*pCV.width,y:Math.random()*pCV.height,r:Math.random()*2+.5,dx:(Math.random()-.5)*.3,dy:(Math.random()-.5)*.3,a:Math.random()*.4+.2});}
+function drawP(){pCx.clearRect(0,0,pCV.width,pCV.height);pts.forEach(p=>{pCx.beginPath();pCx.arc(p.x,p.y,p.r,0,Math.PI*2);pCx.fillStyle=`rgba(0,229,255,${p.a})`;pCx.fill();p.x+=p.dx;p.y+=p.dy;if(p.x<0||p.x>pCV.width)p.dx*=-1;if(p.y<0||p.y>pCV.height)p.dy*=-1;});requestAnimationFrame(drawP);}
+addEventListener('resize',initP);initP();drawP();
+// ===== SCREEN =====
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');G.screen=id;scrollTo(0,0);}
+// ===== TUTORIAL =====
+function showTutorial(type,cb){
+const ov=document.createElement('div');ov.className='tutorial-overlay';ov.id='tut-ov';
+let html='<div class="tutorial-box">';
+if(type==='pcr'){
+html+=`<h2>🔬 PCR法（ポリメラーゼ連鎖反応）</h2>
+<p>微量のDNAを大量に増幅する技術です。<br>3つの温度ステップを繰り返します。</p>
+<div class="steps">
+<div class="st"><div class="num">①</div><div class="desc"><strong>変性</strong>（<span class="temp">95℃</span>）<br>加熱してDNAの二重鎖をほどく</div></div>
+<div class="st"><div class="num">②</div><div class="desc"><strong>アニーリング</strong>（<span class="temp">55〜60℃</span>）<br>プライマーが一本鎖DNAに結合</div></div>
+<div class="st"><div class="num">③</div><div class="desc"><strong>伸長</strong>（<span class="temp">72℃</span>）<br>DNAポリメラーゼが新しい鎖を合成</div></div>
+</div>
+<p style="color:var(--cyan)">1サイクルでDNAが2倍に！ nサイクルで2<sup>n</sup>倍に増幅されます。</p>
+<p style="color:var(--gold);font-size:.85rem;margin-top:8px">🎮 針が自動で動きます。ターゲット範囲に来たら「STOP」をタップ！</p>`;
+}else if(type==='electro'){
+html+=`<h2>⚡ ゲル電気泳動</h2>
+<p>DNAを大きさ（分子量）で分離する技術です。</p>
+<div class="steps">
+<div class="st"><div class="num">①</div><div class="desc">ピペットマンでチューブからサンプルを吸い取り、ゲルのウェル（穴）に入れる</div></div>
+<div class="st"><div class="num">②</div><div class="desc">電圧をかけると、<strong style="color:var(--red)">負(−)電荷</strong>のDNAが<strong style="color:var(--green)">陽極(+)</strong>へ移動</div></div>
+<div class="st"><div class="num">③</div><div class="desc"><strong style="color:var(--cyan)">小さい断片</strong>ほどゲルの網目を通りやすく、<strong>速く・遠くまで</strong>移動</div></div>
+</div>
+<p style="color:var(--gold);font-size:.85rem;margin-top:8px">🎮 ピペットがレール上を移動します。TAP でサンプルの吸入・排出！</p>`;
+}else if(type==='detective'){
+html+=`<h2>🔍 DNA鑑定</h2>
+<p>電気泳動で得られたバンドパターンを比較して犯人を特定します。</p>
+<div class="steps">
+<div class="st"><div class="num">①</div><div class="desc">現場証拠のDNAパターンをよく観察する</div></div>
+<div class="st"><div class="num">②</div><div class="desc">容疑者を選んでDNAパターンを比較</div></div>
+<div class="st"><div class="num">③</div><div class="desc"><strong style="color:var(--gold)">全てのバンド位置が一致</strong>する人物が犯人！</div></div>
+</div>`;
+}
+html+=`<button class="btn primary" onclick="document.getElementById('tut-ov').remove()" style="margin-top:16px">OK！始めよう</button></div>`;
+ov.innerHTML=html;document.body.appendChild(ov);
+}
+// ===== PCR SLOT GAME =====
+let pcrTheta=0,pcrDir=1,pcrSpeed=0.012,pcrFrame=null,pcrStopped=false;
+let dnaAnimState='idle',dnaAnimT=0;
+const gaugeCV=document.getElementById('gauge-cv'),gCtx=gaugeCV.getContext('2d');
+const dnaCV=document.getElementById('dna-canvas'),dCtx=dnaCV.getContext('2d');
+
+function startPCR(){
+showScreen('pcr-game');G.pcrCycle=1;G.pcrStep=0;G.dnaCount=1;G.pcrScore=0;
+pcrTheta=0;pcrDir=1;pcrSpeed=0.012;pcrStopped=false;dnaAnimState='idle';dnaAnimT=0;
+updatePCRUI();showTutorial('pcr');
+requestAnimationFrame(pcrLoop);requestAnimationFrame(animDNA);}
+
+function updatePCRUI(){
+document.querySelectorAll('#step-ind .step').forEach((el,i)=>{
+el.classList.remove('active','done');
+if(i<G.pcrStep)el.classList.add('done');
+else if(i===G.pcrStep)el.classList.add('active');});
+document.getElementById('cycle-num').textContent=G.pcrCycle;
+document.getElementById('dna-count').textContent=G.dnaCount;
+document.getElementById('pcr-score').textContent=G.pcrScore;
+const prog=((G.pcrCycle-1)*3+G.pcrStep)/(5*3)*100;
+document.getElementById('pcr-progress').style.width=prog+'%';
+const step=STEPS[G.pcrStep];
+document.getElementById('pcr-hint').innerHTML=step.hint.replace(/\n/g,'<br>');
+document.getElementById('stop-btn').textContent='🎯 STOP!!';
+document.getElementById('stop-btn').style.borderColor='';document.getElementById('stop-btn').style.color='';}
+
+function pcrLoop(){
+if(G.screen!=='pcr-game'||pcrStopped)return;
+const cx=110,cy=110,r=90;gCtx.clearRect(0,0,220,220);
+const startA=Math.PI*.75,endA=Math.PI*2.25,range=endA-startA;
+// bg
+gCtx.beginPath();gCtx.arc(cx,cy,r,startA,endA);gCtx.strokeStyle='rgba(255,255,255,.1)';gCtx.lineWidth=14;gCtx.lineCap='round';gCtx.stroke();
+// target zone
+const step=STEPS[G.pcrStep];
+const s1=startA+range*((step.range[0]-20)/80),s2=startA+range*((step.range[1]-20)/80);
+gCtx.beginPath();gCtx.arc(cx,cy,r,s1,s2);gCtx.strokeStyle=step.color+'55';gCtx.lineWidth=18;gCtx.stroke();
+// colored arc
+const frac=pcrTheta;const a=startA+range*frac;
+const grad=gCtx.createLinearGradient(0,220,220,0);
+grad.addColorStop(0,'#1565c0');grad.addColorStop(.4,'#00e5ff');grad.addColorStop(.7,'#ffd600');grad.addColorStop(1,'#ff1744');
+gCtx.beginPath();gCtx.arc(cx,cy,r,startA,a);gCtx.strokeStyle=grad;gCtx.lineWidth=14;gCtx.lineCap='round';gCtx.stroke();
+// needle
+const nx=cx+(r-5)*Math.cos(a),ny=cy+(r-5)*Math.sin(a);
+gCtx.beginPath();gCtx.arc(nx,ny,8,0,Math.PI*2);gCtx.fillStyle='#fff';gCtx.fill();
+gCtx.beginPath();gCtx.arc(nx,ny,5,0,Math.PI*2);gCtx.fillStyle=step.color;gCtx.fill();
+// temp
+const temp=Math.round(20+80*pcrTheta);
+document.getElementById('temp-val').textContent=temp;
+document.getElementById('temp-val').style.color=temp>90?'var(--red)':temp>65?'var(--gold)':temp>50?'var(--cyan)':'#64b5f6';
+// move
+pcrTheta+=pcrDir*pcrSpeed;if(pcrTheta>1){pcrTheta=1;pcrDir=-1;}if(pcrTheta<0){pcrTheta=0;pcrDir=1;}
+pcrFrame=requestAnimationFrame(pcrLoop);}
+
+function pcrStop(){
+if(pcrStopped)return;pcrStopped=true;cancelAnimationFrame(pcrFrame);
+const temp=Math.round(20+80*pcrTheta);const step=STEPS[G.pcrStep];
+const inRange=temp>=step.range[0]&&temp<=step.range[1];
+const exact=Math.abs(temp-step.target)<=2;
+const btn=document.getElementById('stop-btn');
+if(inRange){
+playSound('success');const pts=exact?30:15;G.pcrScore+=pts;G.score+=pts;
+btn.textContent='✓ 正解！';btn.style.borderColor='var(--green)';btn.style.color='var(--green)';
+dnaAnimState=['denature','anneal','extend'][G.pcrStep];dnaAnimT=0;
+}else{
+playSound('fail');G.pcrScore=Math.max(0,G.pcrScore-5);G.score=Math.max(0,G.score-5);
+btn.textContent='✗ 範囲外…';btn.style.borderColor='var(--red)';btn.style.color='var(--red)';
+}
+setTimeout(()=>{
+G.pcrStep++;
+if(G.pcrStep>=3){G.pcrStep=0;G.dnaCount*=2;G.pcrCycle++;pcrSpeed+=0.003;}
+if(G.pcrCycle>5){finishPCR();return;}
+dnaAnimState='idle';pcrStopped=false;updatePCRUI();pcrLoop();
+},1500);}
+
+function finishPCR(){G.dnaCount=32;updatePCRUI();document.getElementById('pcr-progress').style.width='100%';setTimeout(startElectro,1200);}
+
+// ===== DNA ANIMATION (V1 based) =====
+function animDNA(){
+if(G.screen!=='pcr-game'){requestAnimationFrame(animDNA);return;}
+const w=dnaCV.width,h=dnaCV.height;dCtx.clearRect(0,0,w,h);
+dnaAnimT+=0.02;const amp=35,freq=0.08,cx=w/2;let sep=0;
+if(dnaAnimState==='denature')sep=Math.min(dnaAnimT*50,45);
+else if(dnaAnimState==='anneal')sep=45;
+else if(dnaAnimState==='extend')sep=45;
+for(let s=0;s<2;s++){
+const dir=s===0?1:-1,off=s===0?-sep/2:sep/2;
+dCtx.beginPath();
+for(let y=15;y<h-15;y++){const x=cx+off+dir*amp*Math.sin(freq*y+dnaAnimT*2);
+if(y===15)dCtx.moveTo(x,y);else dCtx.lineTo(x,y);}
+dCtx.strokeStyle=s===0?'#00e5ff':'#e040fb';dCtx.lineWidth=3;dCtx.stroke();}
+if(dnaAnimState==='idle'||dnaAnimState==='extend'){
+const al=dnaAnimState==='extend'?Math.min(dnaAnimT,1):1;
+for(let y=25;y<h-15;y+=12){
+const x1=cx-sep/2+(-1)*amp*Math.sin(freq*y+dnaAnimT*2);
+const x2=cx+sep/2+(1)*amp*Math.sin(freq*y+dnaAnimT*2);
+if(sep<10){dCtx.beginPath();dCtx.moveTo(x1,y);dCtx.lineTo(x2,y);dCtx.strokeStyle=`rgba(255,255,255,${.3*al})`;dCtx.lineWidth=1;dCtx.stroke();}}}
+if(dnaAnimState==='anneal'){
+const al=Math.min(dnaAnimT*2,1);dCtx.fillStyle=`rgba(255,214,0,${al})`;
+for(let s=0;s<2;s++){const dir=s===0?1:-1,off=s===0?-22:22,sY=s===0?h-70:50;
+for(let y=sY;y<sY+25;y+=2){const x=cx+off+dir*amp*Math.sin(freq*y+dnaAnimT*2);dCtx.fillRect(x-2,y-1,4,2);}}}
+if(dnaAnimState==='extend'){
+const len=Math.min(dnaAnimT*80,h-70);
+for(let s=0;s<2;s++){const dir=s===0?1:-1,off=s===0?22:-22,sY=s===0?h-70:50;
+const eY=s===0?Math.max(sY-len,30):Math.min(sY+len,h-30);
+dCtx.beginPath();const yS=Math.min(sY,eY),yE=Math.max(sY,eY);
+for(let y=yS;y<yE;y++){const x=cx+off+dir*amp*Math.sin(freq*y+dnaAnimT*2);
+if(y===yS)dCtx.moveTo(x,y);else dCtx.lineTo(x,y);}
+dCtx.strokeStyle=s===0?'rgba(224,64,251,.7)':'rgba(0,229,255,.7)';dCtx.lineWidth=3;dCtx.stroke();}}
+const labels={idle:'二重鎖DNA',denature:'変性：鎖がほどける',anneal:'アニーリング：プライマー結合',extend:'伸長：新しい鎖を合成'};
+document.getElementById('dna-label').textContent=`${labels[dnaAnimState]||''} ｜ DNA: ${G.dnaCount}本`;
+requestAnimationFrame(animDNA);}
+
+// ===== ELECTROPHORESIS CRANE GAME =====
+let cranePos=0,craneDir=1,craneSpeed=2,craneFrame=null;
+let hasSample=false,sampleIdx=-1,loadedWells=[],cranePhase='loading';
+const BAND_DATA={
+scene:[22,45,68,85],
+suspectA:[22,48,65,85],
+suspectB:[22,45,68,85],// criminal match for case 0
+suspectC:[25,50,70,80],
+marker:[10,20,30,40,50,60,70,80,90]
+};
+
+function startElectro(){
+showScreen('electro-game');G.electroScore=0;
+document.getElementById('electro-score').textContent='0';
+document.getElementById('electro-progress').style.width='0%';
+document.getElementById('polarity-phase').style.display='none';
+document.getElementById('run-phase').style.display='none';
+document.getElementById('neg-electrode').style.opacity='0';
+document.getElementById('pos-electrode').style.opacity='0';
+hasSample=false;sampleIdx=-1;loadedWells=[];cranePhase='loading';cranePos=10;craneDir=1;craneSpeed=2;
+showTutorial('electro');
+buildTubes();buildGel();craneLoop();}
+
+function buildTubes(){
+const rack=document.getElementById('tube-rack');rack.innerHTML='';
+SAMPLE_NAMES.forEach((name,i)=>{
+const wrap=document.createElement('div');wrap.style.cssText='text-align:center';
+const tube=document.createElement('div');tube.className='tube';tube.id=`tube-${i}`;tube.dataset.idx=i;
+const liq=document.createElement('div');liq.className='liquid';liq.style.height='30px';liq.style.background=SAMPLE_COLORS[i];
+tube.appendChild(liq);wrap.appendChild(tube);
+const lbl=document.createElement('div');lbl.className='tube-label';lbl.textContent=name;wrap.appendChild(lbl);
+rack.appendChild(wrap);});}
+
+function buildGel(){
+const gel=document.getElementById('gel');gel.innerHTML='';
+const labels=document.getElementById('gel-labels');labels.innerHTML='';
+const n=SAMPLE_NAMES.length;
+SAMPLE_NAMES.forEach((name,i)=>{
+const well=document.createElement('div');well.className='well';well.id=`well-${i}`;
+// 5つのウェルを等間隔に配置 (幅の(100/n)%ごとに中央配置)
+well.style.left=`calc(${(100/n)*i + (100/n)/2}% - 15px)`;
+gel.appendChild(well);
+const lbl=document.createElement('div');lbl.textContent=name;lbl.style.flex='1';lbl.style.textAlign='center';
+labels.appendChild(lbl);});}
+
+function craneLoop(){
+if(cranePhase!=='loading')return;
+const area=document.getElementById('crane-area');const w=area.offsetWidth;
+cranePos+=craneDir*craneSpeed;
+if(cranePos>w-40)craneDir=-1;if(cranePos<5)craneDir=1;
+const arm=document.getElementById('pipette-arm');
+const tip=document.getElementById('pipette-tip');
+const sample=document.getElementById('pipette-sample');
+arm.style.left=cranePos+'px';tip.style.left=cranePos+'px';sample.style.left=cranePos+'px';
+craneFrame=requestAnimationFrame(craneLoop);}
+
+function craneAction(){
+if(cranePhase!=='loading')return;
+playSound('click');
+if(!hasSample){
+const rack=document.getElementById('tube-rack');
+const tubes=rack.querySelectorAll('.tube');
+const expectedIdx=loadedWells.length;
+if(expectedIdx>=SAMPLE_NAMES.length)return;
+const tube=tubes[expectedIdx];
+const tubeRect=tube.getBoundingClientRect();
+const area=document.getElementById('crane-area');
+const areaRect=area.getBoundingClientRect();
+const tubeCenter=tubeRect.left+tubeRect.width/2-areaRect.left;
+const pipCenter=cranePos+6;
+if(Math.abs(pipCenter-tubeCenter)<30){
+hasSample=true;sampleIdx=expectedIdx;
+tube.querySelector('.liquid').style.height='0';
+const ps=document.getElementById('pipette-sample');
+ps.style.background=SAMPLE_COLORS[sampleIdx];ps.style.opacity='1';
+document.getElementById('electro-msg').innerHTML=`<span style="color:${SAMPLE_COLORS[sampleIdx]}">${SAMPLE_NAMES[sampleIdx]}</span> を吸い取りました！ウェルの上でTAPして投入！`;
+G.electroScore+=10;G.score+=10;playSound('success');
+}else{
+playSound('fail');G.score=Math.max(0,G.score-5);
+document.getElementById('electro-msg').innerHTML=`<span style="color:var(--red)">吸入失敗！ペナルティ（-5点）。${SAMPLE_NAMES[expectedIdx]}は失われました...スキップします。</span>`;
+tube.querySelector('.liquid').style.height='0';
+// スキップ処理：見かけ上はロードされたことにして進める
+loadedWells.push(expectedIdx);
+const well=document.getElementById(`well-${expectedIdx}`);
+if(well)well.classList.add('loaded'); // 色はつけない
+craneSpeed*=1.5; // スピードアップ
+checkCranePhase();
+}
+}else{
+const gel=document.getElementById('gel');
+const area=document.getElementById('crane-area');
+const areaRect=area.getBoundingClientRect();
+const wellIdx=loadedWells.length;
+const well=document.getElementById(`well-${wellIdx}`);
+if(!well)return;
+const wellRect=well.getBoundingClientRect();
+const wellCenter=wellRect.left+wellRect.width/2-areaRect.left;
+const pipCenter=cranePos+6;
+if(Math.abs(pipCenter-wellCenter)<30){
+hasSample=false;loadedWells.push(sampleIdx);
+well.classList.add('loaded');well.style.background=SAMPLE_COLORS[sampleIdx];
+const ps=document.getElementById('pipette-sample');ps.style.opacity='0';
+G.electroScore+=10;G.score+=10;playSound('success');
+craneSpeed*=1.5; // スピードアップ
+checkCranePhase();
+}else{
+playSound('fail');G.score=Math.max(0,G.score-5);
+document.getElementById('electro-msg').innerHTML=`<span style="color:var(--red)">アプライ失敗！ペナルティ（-5点）。${SAMPLE_NAMES[sampleIdx]}はこぼれました...スキップします。</span>`;
+hasSample=false;
+loadedWells.push(sampleIdx);
+const ps=document.getElementById('pipette-sample');ps.style.opacity='0';
+well.classList.add('loaded'); // 色はつけない
+craneSpeed*=1.5; // スピードアップ
+checkCranePhase();
+}
+}
+document.getElementById('electro-score').textContent=G.electroScore;}
+
+function checkCranePhase(){
+if(loadedWells.length>=SAMPLE_NAMES.length){
+cancelAnimationFrame(craneFrame);cranePhase='polarity';
+document.getElementById('electro-msg').innerHTML='<span style="color:var(--green)">全サンプル投入完了！</span>';
+document.getElementById('electro-progress').style.width='40%';
+setTimeout(()=>{document.getElementById('polarity-phase').style.display='block';},800);
+}else{
+if(!hasSample) document.getElementById('electro-msg').innerHTML=`✓ ${loadedWells.length}/${SAMPLE_NAMES.length} 投入済み。次のチューブ（${SAMPLE_NAMES[loadedWells.length]}）を吸い取ろう！`;
+}
+}
+
+// Polarity
+function selectPolarity(correct){
+document.getElementById('polarity-phase').style.display='none';
+document.getElementById('neg-electrode').style.opacity='1';
+document.getElementById('pos-electrode').style.opacity='1';
+if(correct){playSound('success');G.electroScore+=30;G.score+=30;
+document.getElementById('electro-msg').innerHTML='<span style="color:var(--green)">正解！DNAは負電荷なので陽極(+)に向かって移動します！</span>';
+}else{playSound('fail');G.score=Math.max(0,G.score-10);
+document.getElementById('electro-msg').innerHTML='<span style="color:var(--red)">不正解…DNAは負電荷→陽極(+)に移動。極性を修正して泳動開始します。</span>';}
+document.getElementById('electro-score').textContent=G.electroScore;
+document.getElementById('electro-progress').style.width='60%';
+setTimeout(startRunning,1500);}
+
+// Running gel
+let runProgress=0,runFrame=null;
+function startRunning(){
+cranePhase='running';
+document.getElementById('run-phase').style.display='block';
+document.getElementById('finish-line').style.opacity='1';
+const gel=document.getElementById('gel');
+// Create bands with different speeds per sample
+const bandData=[
+BAND_DATA.scene, BAND_DATA.suspectA, BAND_DATA.suspectB, BAND_DATA.suspectC, BAND_DATA.marker
+];
+bandData.forEach((bands,si)=>{
+const wellEl = document.getElementById(`well-${si}`);
+const wellLeft = wellEl.offsetLeft;
+bands.forEach(pos=>{
+const b=document.createElement('div');b.className='band';
+b.style.left=`calc(${wellLeft}px + 2px)`;b.style.width='26px';b.style.top='15px';
+b.style.background=SAMPLE_COLORS[si];b.dataset.target=pos;b.dataset.si=si;
+gel.appendChild(b);});});
+runProgress=0;runFrame=requestAnimationFrame(runGelLoop);}
+
+function runGelLoop(){
+if(cranePhase!=='running')return;
+runProgress+=0.5;
+const gel=document.getElementById('gel');
+const bands=gel.querySelectorAll('.band');
+const gelH=gel.offsetHeight;
+bands.forEach(b=>{
+const target=parseFloat(b.dataset.target);
+const targetY=(target/100)*(gelH-30)+15;
+const currentY=15+(targetY-15)*(runProgress/100);
+b.style.top=currentY+'px';b.classList.add('visible');});
+document.getElementById('electro-progress').style.width=`${Math.min(60+runProgress*0.4, 100)}%`;
+runFrame=requestAnimationFrame(runGelLoop);}
+
+function stopRunning(){
+cancelAnimationFrame(runFrame);cranePhase='done';
+document.getElementById('run-phase').style.display='none';
+G.runProgress = runProgress; // 保存してフェーズ3に反映
+const dist=Math.abs(runProgress-85);
+if(dist<15){playSound('success');G.electroScore+=50;G.score+=50;
+document.getElementById('electro-msg').innerHTML='<span style="color:var(--green)">🎉 素晴らしいタイミング！バンドがきれいに分離されました！</span>';
+}else if(dist<30){playSound('success');G.electroScore+=25;G.score+=25;
+document.getElementById('electro-msg').innerHTML='<span style="color:var(--gold)">まあまあのタイミング。バンドは分離されました。</span>';
+}else{playSound('fail');
+document.getElementById('electro-msg').innerHTML='<span style="color:var(--red)">タイミングが…。バンドの分離具合（証拠の手がかり）に大きく影響が出ます！</span>';}
+document.getElementById('electro-score').textContent=G.electroScore;
+document.getElementById('electro-progress').style.width='100%';
+setTimeout(showElectroQuiz,2000);}
+
+function showElectroQuiz(){
+const qDiv=document.getElementById('electro-quiz');qDiv.style.display='block';
+qDiv.innerHTML=`<div class="card" style="border-color:var(--gold)">
+<h3 style="color:var(--gold);font-size:.9rem;margin-bottom:8px">🧠 クイズ</h3>
+<p style="font-size:.9rem;margin-bottom:12px">ゲルの下の方（陽極側）にあるバンドは、どんなDNA断片？</p>
+<button class="btn" onclick="answerQuiz(true)" style="margin:4px;padding:10px 20px;font-size:.85rem">小さい断片</button>
+<button class="btn" onclick="answerQuiz(false)" style="margin:4px;padding:10px 20px;font-size:.85rem">大きい断片</button>
+</div>`;}
+
+function answerQuiz(correct){
+const qDiv=document.getElementById('electro-quiz');
+if(correct){
+G.electroScore+=30;G.score+=30;
+document.getElementById('electro-score').textContent=G.electroScore;
+qDiv.innerHTML=`<div class="card" style="border-color:var(--green)">
+<p style="color:var(--green);font-weight:700">🎉 正解！</p>
+<p style="font-size:.85rem;margin-top:8px;line-height:1.7">小さいDNA断片ほどゲルの網目を通りやすいため、より遠く（陽極側）まで移動します。</p>
+<button class="btn primary" onclick="startDetective()" style="margin-top:12px;padding:10px 24px;font-size:.85rem">DNA鑑定へ進む →</button></div>`;
+}else{
+qDiv.innerHTML=`<div class="card" style="border-color:var(--red)">
+<p style="color:var(--red)">残念… 正解は「小さい断片」です。</p>
+<p style="font-size:.85rem;margin-top:8px;line-height:1.7">小さいDNA断片はゲルの網目を通りやすく、より遠くまで移動します。</p>
+<button class="btn primary" onclick="startDetective()" style="margin-top:12px;padding:10px 24px;font-size:.85rem">DNA鑑定へ進む →</button></div>`;}}
+
+// ===== DETECTIVE (V1 Style) =====
+function startDetective(){
+showScreen('detective');G.currentCase=0;G.detScore=0;
+document.getElementById('det-score').textContent='0';
+showTutorial('detective');renderCase();}
+
+function renderCase(){
+const c=CASES[G.currentCase];const wrap=document.getElementById('cases-wrap');
+const diffBadge=c.difficulty==='Easy'?'green':c.difficulty==='Normal'?'cyan':'red';
+let html=`<div style="text-align:center;margin-bottom:16px">
+<span class="badge ${diffBadge}">${c.difficulty}</span>
+<span style="margin-left:8px">Case ${G.currentCase+1} / ${G.totalCases}</span></div>`;
+html+=`<div class="gel-compare">
+<div class="panel"><div class="label" style="color:var(--red);font-weight:700">🔴 現場証拠DNA</div>
+<div class="mini-gel" id="scene-gel"></div></div>
+<div class="panel"><div class="label" style="color:var(--cyan)">🔵 選択した容疑者DNA</div>
+<div class="mini-gel" id="suspect-gel"><div style="padding:80px 20px;color:var(--text2);font-size:.85rem">容疑者を選択してください</div></div></div></div>`;
+html+=`<h3 style="font-size:.9rem;margin:16px 0 8px;color:var(--text2)">容疑者リスト</h3><div class="suspect-grid">`;
+c.suspects.forEach((s,i)=>{
+html+=`<div class="suspect-card" id="sus-${i}" onclick="selectSuspect(${i})">
+<div class="avatar">${s.avatar}</div><div class="name">${s.name}</div></div>`;});
+html+=`</div><div style="text-align:center;margin-top:16px">
+<button class="btn primary" id="judge-btn" onclick="judgeCase()" style="padding:12px 32px" disabled>🔍 この容疑者で確定</button></div>
+<div id="case-result" style="margin-top:16px"></div>`;
+wrap.innerHTML=html;
+setTimeout(()=>{drawMiniBands('scene-gel',c.scene,'#ff1744');},100);
+G.selectedSuspect=-1;}
+
+function drawMiniBands(elId,bands,color){
+const el=document.getElementById(elId);if(!el)return;el.innerHTML='';
+const well=document.createElement('div');
+well.style.cssText='position:absolute;top:5px;left:50%;transform:translateX(-50%);width:40px;height:6px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);border-radius:2px';
+el.appendChild(well);
+// 泳動タイミングのズレ（85が理想）をスケールとして反映
+const scale = G.runProgress ? (G.runProgress / 85) : 1;
+bands.forEach(pos=>{
+const scaledPos = pos * scale; // クランプを解除して枠外へ消えるようにする
+const band=document.createElement('div');band.className='band visible';
+band.style.cssText=`width:36px;left:50%;transform:translateX(-50%);top:${scaledPos/100*170+20}px;background:${color};height:4px;border-radius:2px;box-shadow:0 0 6px ${color}44`;
+el.appendChild(band);});}
+
+function selectSuspect(idx){
+G.selectedSuspect=idx;
+document.querySelectorAll('.suspect-card').forEach((c,i)=>c.classList.toggle('selected',i===idx));
+const c=CASES[G.currentCase];
+drawMiniBands('suspect-gel',c.suspects[idx].bands,'#00e5ff');
+document.getElementById('judge-btn').disabled=false;}
+
+function judgeCase(){
+if(G.selectedSuspect<0)return;
+const c=CASES[G.currentCase];const correct=G.selectedSuspect===c.criminal;
+const cards=document.querySelectorAll('.suspect-card');
+cards[c.criminal].classList.add('correct');
+if(!correct)cards[G.selectedSuspect].classList.add('wrong');
+const resDiv=document.getElementById('case-result');
+if(correct){
+playSound('success');G.detScore+=50;G.score+=50;
+document.getElementById('det-score').textContent=G.detScore;
+resDiv.innerHTML=`<div class="card" style="border-color:var(--green);text-align:center">
+<p style="color:var(--green);font-size:1.1rem;font-weight:700">🎉 正解！犯人は ${c.suspects[c.criminal].name} でした！</p>
+<p style="font-size:.85rem;margin-top:8px;color:var(--text2)">DNAのバンドパターンが現場証拠と完全に一致しています。</p>
+${G.currentCase<G.totalCases-1?`<button class="btn primary" onclick="nextCase()" style="margin-top:12px">次のCase →</button>`
+:`<button class="btn primary" onclick="showResults()" style="margin-top:12px">最終結果を見る →</button>`}</div>`;
+}else{
+playSound('fail');
+resDiv.innerHTML=`<div class="card" style="border-color:var(--red);text-align:center">
+<p style="color:var(--red)">不正解… 犯人は ${c.suspects[c.criminal].name} でした</p>
+<p style="font-size:.85rem;margin-top:8px;color:var(--text2)">バンドの位置を一本ずつ比較してみましょう。</p>
+${G.currentCase<G.totalCases-1?`<button class="btn" onclick="nextCase()" style="margin-top:12px">次のCase →</button>`
+:`<button class="btn" onclick="showResults()" style="margin-top:12px">最終結果を見る →</button>`}</div>`;}
+document.getElementById('judge-btn').disabled=true;}
+
+function nextCase(){G.currentCase++;renderCase();}
+
+// ===== RESULTS =====
+function showResults(){
+showScreen('results');
+const total=G.pcrScore+G.electroScore+G.detScore;
+document.getElementById('final-score').textContent=total;
+document.getElementById('rv-pcr').textContent=G.pcrScore;
+document.getElementById('rv-electro').textContent=G.electroScore;
+document.getElementById('rv-det').textContent=G.detScore;
+const stars=total>=350?'⭐⭐⭐':total>=200?'⭐⭐☆':total>=100?'⭐☆☆':'☆☆☆';
+document.getElementById('stars').textContent=stars;
+document.getElementById('review-text').innerHTML=`
+<p><strong style="color:var(--cyan)">PCR法</strong>：DNAの変性（95℃）→アニーリング（55-60℃）→伸長（72℃）の3ステップを繰り返すことで、微量のDNAを2<sup>n</sup>倍に増幅できます。耐熱性のDNAポリメラーゼ（Taq）を使用するため、高温でも失活しません。</p>
+<p style="margin-top:12px"><strong style="color:var(--green)">電気泳動</strong>：DNAは負電荷を持つため、電場中で陽極に向かって移動します。アガロースゲルの網目がふるいの役割を果たし、小さいDNA断片ほど速く・遠くまで移動します。</p>
+<p style="margin-top:12px"><strong style="color:var(--magenta)">DNAフィンガープリンティング</strong>：制限酵素でDNAを切断し、電気泳動で分離すると、個人ごとに異なるバンドパターンが得られます。この原理を利用して、犯罪捜査や親子鑑定が行われています。</p>
+<p style="margin-top:12px;color:var(--gold)">🍩 クボカワ先生のエクレアは無事に犯人を特定し、正義が果たされました！</p>`;}
+
+// ===== INIT =====
+document.addEventListener('touchend',function(e){
+if(e.target.tagName==='BUTTON'||e.target.classList.contains('suspect-card')){e.preventDefault();}},{passive:false});
+</script>
+</body>
+</html>

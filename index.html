@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>河瀬高校 バイオテクノロジー実習ハブ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --accent: #38bdf8;
+            --accent-2: #818cf8;
+        }
+        body {
+            margin: 0;
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px 20px;
+            background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 100%);
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, var(--accent), var(--accent-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+        }
+        p.subtitle {
+            color: #94a3b8;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            max-width: 1200px;
+            width: 100%;
+        }
+        .card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 32px;
+            text-decoration: none;
+            color: white;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+        .icon {
+            font-size: 40px;
+            margin-bottom: 20px;
+        }
+        .card h2 {
+            margin: 0 0 12px 0;
+            font-size: 1.5rem;
+        }
+        .card p {
+            color: #94a3b8;
+            line-height: 1.6;
+            margin: 0;
+            font-size: 0.95rem;
+        }
+        .btn {
+            margin-top: 24px;
+            padding: 12px;
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid var(--accent);
+            border-radius: 12px;
+            text-align: center;
+            color: var(--accent);
+            font-weight: 600;
+            transition: 0.2s;
+        }
+        .card:hover .btn {
+            background: var(--accent);
+            color: var(--bg);
+        }
+        footer {
+            margin-top: auto;
+            padding-top: 60px;
+            color: #475569;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>BIOTECH HUB</h1>
+    <p class="subtitle">河瀬高校 生物科 - デジタル実習ポータル</p>
+
+    <div class="grid">
+        <a href="pcr/index.html" class="card">
+            <div>
+                <div class="icon">🧬</div>
+                <h2>PCR探偵 V3</h2>
+                <p>微量なDNAを増幅して犯人を特定せよ。PCRの温度サイクルと原理をマスターする。</p>
+            </div>
+            <div class="btn">START MISSION</div>
+        </a>
+
+        <a href="factory/index.html" class="card">
+            <div>
+                <div class="icon">🏭</div>
+                <h2>遺伝子工場 V2</h2>
+                <p>大腸菌にヒトのインスリン遺伝子を導入。プラスミド設計と形質転換のシミュレーション。</p>
+            </div>
+            <div class="btn">START MISSION</div>
+        </a>
+
+        <a href="sanger/index.html" class="card">
+            <div>
+                <div class="icon">✨</div>
+                <h2>塩基配列解読</h2>
+                <p>サンガー法によるDNAシーケンシング。未知の配列を1塩基ずつ読み解く技術に挑戦。</p>
+            </div>
+            <div class="btn">START MISSION</div>
+        </a>
+
+        <a href="detective/index.html" class="card">
+            <div>
+                <div class="icon">🔍</div>
+                <h2>バイオテック探偵団</h2>
+                <p>最新のバイオ技術を駆使して難事件を解決。iPS細胞やmRNAワクチンなど全6ケース。</p>
+            </div>
+            <div class="btn">START MISSION</div>
+        </a>
+    </div>
+
+    <footer>&copy; 2026 Kawase High School Biology Dept. Powered by Antigravity</footer>
+</body>
+</html>

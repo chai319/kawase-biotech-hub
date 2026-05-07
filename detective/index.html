@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>バイオテック探偵団 - Biotech Detective</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0e17;
+      --bg-panel: rgba(15, 23, 42, 0.9);
+      --primary: #3b82f6;
+      --primary-glow: rgba(59, 130, 246, 0.5);
+      --accent: #ef4444;
+      --accent-glow: rgba(239, 68, 68, 0.5);
+      --success: #10b981;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --card-bg: linear-gradient(145deg, #1e293b, #0f172a);
+      --card-border: #334155;
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    
+    body {
+      font-family: 'Noto Serif JP', serif;
+      background: var(--bg);
+      background-image: 
+        radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 85% 30%, rgba(239, 68, 68, 0.05) 0%, transparent 50%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      user-select: none;
+    }
+
+    h1, h2, h3, .eng { font-family: 'Orbitron', sans-serif; }
+
+    .screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      animation: fade-in 0.4s ease-out;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      flex: 1;
+    }
+    .screen.active { display: flex; }
+
+    @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse-red { 0%, 100% { box-shadow: 0 0 15px var(--accent-glow); } 50% { box-shadow: 0 0 30px var(--accent-glow), inset 0 0 10px var(--accent-glow); } }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+    /* Buttons */
+    .btn {
+      font-family: 'Noto Serif JP', serif;
+      font-weight: 700;
+      padding: 16px 32px;
+      border: 2px solid var(--primary);
+      background: rgba(59, 130, 246, 0.1);
+      color: var(--primary);
+      font-size: 1.2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+    .btn:active { transform: scale(0.96); box-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+    .btn.accent { border-color: var(--accent); color: var(--accent); background: rgba(239, 68, 68, 0.1); }
+    .btn.accent:hover { background: rgba(239, 68, 68, 0.2); box-shadow: 0 0 15px var(--accent-glow); }
+
+    /* Title Screen */
+    .title-logo {
+      text-align: center;
+      margin: 10vh 0 40px;
+    }
+    .title-logo h1 {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 900;
+      letter-spacing: 5px;
+      text-shadow: 2px 2px 0px var(--accent), -2px -2px 0px var(--primary);
+      margin-bottom: 10px;
+      font-family: 'Noto Serif JP', serif;
+    }
+    .title-logo p {
+      color: var(--primary);
+      letter-spacing: 10px;
+      font-size: 1.2rem;
+    }
+    
+    /* Cases Screen */
+    .case-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      width: 100%;
+      margin-top: 30px;
+    }
+    .case-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-left: 4px solid var(--primary);
+      padding: 0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 16/10;
+    }
+    .case-card img {
+      width: 100%; height: 100%; object-fit: cover; opacity: 0.6;
+      transition: all 0.3s;
+    }
+    .case-card .case-info {
+      position: absolute; bottom: 0; left: 0; width: 100%;
+      background: linear-gradient(transparent, rgba(0,0,0,0.9));
+      padding: 15px;
+    }
+    .case-card:hover img, .case-card:active img {
+      opacity: 0.9; transform: scale(1.05);
+    }
+    .case-card h3 { font-size: 1.2rem; margin-bottom: 5px; color: #fff; text-shadow: 0 2px 4px #000; }
+    .case-card p { font-size: 0.85rem; color: #ccc; line-height: 1.4; }
+
+    /* Game Desk Screen */
+    .desk-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 15px;
+    }
+    .mission-box {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid var(--accent);
+      padding: 15px;
+      border-radius: 8px;
+      max-width: 60%;
+    }
+    .mission-box h4 { color: var(--accent); margin-bottom: 5px; font-size: 0.9rem; letter-spacing: 2px; }
+    
+    /* Route Slots */
+    .route-container {
+      display: flex;
+      gap: 15px;
+      margin: 20px 0 40px;
+      width: 100%;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .route-slot {
+      width: 140px;
+      height: 180px;
+      border: 2px dashed var(--card-border);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      position: relative;
+      background: rgba(0,0,0,0.2);
+      transition: all 0.3s;
+    }
+    .route-slot.filled { border-style: solid; border-color: var(--primary); background: var(--bg-panel); }
+    .route-slot::after {
+      content: '➔';
+      position: absolute;
+      right: -25px;
+      font-size: 1.5rem;
+      color: var(--card-border);
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .route-slot:last-child::after { display: none; }
+    
+    /* Tech Cards */
+    .deck-container {
+      width: 100%;
+      background: var(--bg-panel);
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+    }
+    .deck-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 12px;
+      max-height: 40vh;
+      overflow-y: auto;
+      padding-right: 10px;
+    }
+    .tech-card {
+      background: var(--card-bg);
+      border: 1px solid #475569;
+      border-radius: 6px;
+      padding: 0;
+      text-align: center;
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.2s;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      height: 150px;
+      overflow: hidden;
+    }
+    .tech-card img {
+      width: 100%; height: 80%; object-fit: cover;
+    }
+    .tech-card .tech-name {
+      height: 20%; display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.75rem; background: rgba(15, 23, 42, 0.9);
+    }
+    .tech-card:active { transform: scale(0.95); }
+    .tech-card.used { opacity: 0.3; pointer-events: none; }
+    
+    /* Card inside slot */
+    .route-slot .tech-card {
+      width: 100%; height: 100%; margin: 0; box-shadow: none; border: none;
+      background: transparent;
+    }
+
+    /* Card Detail Modal */
+    .detail-card-img {
+      width: 100%;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      border: 1px solid #444;
+    }
+    .detail-card-name {
+      font-size: 1.4rem;
+      color: var(--primary);
+      margin-bottom: 10px;
+      font-weight: 900;
+    }
+    .detail-card-desc {
+      font-size: 1rem;
+      line-height: 1.6;
+      color: #ccc;
+      margin-bottom: 20px;
+    }
+    .detail-actions {
+      display: flex;
+      gap: 10px;
+    }
+    .btn-add {
+      background: var(--primary);
+      flex: 2;
+    }
+    .btn-cancel {
+      background: #444;
+      flex: 1;
+    }
+
+    /* AI Appraisal Modal */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    }
+    .modal-overlay.show { opacity: 1; pointer-events: auto; }
+    .modal-content {
+      background: var(--bg-panel); border: 2px solid var(--primary);
+      border-radius: 12px; padding: 30px; max-width: 600px; width: 90%;
+      text-align: center; position: relative;
+    }
+    .modal-content.error { border-color: var(--accent); }
+    .modal-content.success { border-color: var(--success); }
+    
+    .detective-avatar {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: #1e293b; border: 3px solid var(--text);
+      margin: -70px auto 20px; display: flex; align-items: center; justify-content: center;
+      font-size: 2.5rem; box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+    
+    .typewriter-text { font-size: 1.1rem; line-height: 1.8; margin-bottom: 25px; text-align: left; min-height: 80px; }
+
+  </style>
+</head>
+<body>
+
+  <!-- Screen: Title -->
+  <div id="screen-title" class="screen active">
+    <div class="title-logo">
+      <h1>バイオテック<br>探偵団</h1>
+      <p class="eng">BIOTECH DETECTIVE</p>
+    </div>
+    <p style="text-align: center; max-width: 600px; margin-bottom: 40px; line-height: 1.8; color: var(--text-muted);">
+      君は最先端のバイオ技術を操るエージェントだ。<br>
+      目的と制約を見極め、最適な「技術ルート」を構築して事件を解決に導け。
+    </p>
+    <button class="btn" onclick="initGame()">▶ 事件ファイルを開く</button>
+  </div>
+
+  <!-- Screen: Case Selection -->
+  <div id="screen-cases" class="screen">
+    <h2 style="margin-bottom: 10px; color: var(--primary);">SELECT CASE</h2>
+    <p style="color: var(--text-muted);">担当する事件を選択せよ</p>
+    
+    <div class="case-grid">
+      <div class="case-card" onclick="selectCase('A')">
+        <img src="images/tcg_case_a_yeast_1777533294973.png" alt="CASE A">
+        <div class="case-info">
+          <h3>CASE A: 謎の酵母事件</h3>
+          <p>ワイナリーのタンクから発見された未知の酵母。その正体を特定せよ。</p>
+        </div>
+      </div>
+      <div class="case-card" onclick="selectCase('B')">
+        <img src="images/tcg_case_b_insulin_1777533321072.png" alt="CASE B">
+        <div class="case-info">
+          <h3>CASE B: インスリン製造計画</h3>
+          <p>糖尿病患者を救うため、大腸菌にヒトのインスリンを作らせる工場を稼働せよ。</p>
+        </div>
+      </div>
+      <div class="case-card" onclick="selectCase('C')">
+        <img src="images/tcg_case_c_cancer_1777533339181.png" alt="CASE C">
+        <div class="case-info">
+          <h3>CASE C: がん細胞の真犯人</h3>
+          <p>ガン細胞で異常に働く未知の遺伝子を見つけ、その働きを証明せよ。</p>
+        </div>
+      </div>
+      <div class="case-card" onclick="selectCase('D')">
+        <img src="images/tcg_case_d_tomato_1778102772670.png" alt="CASE D">
+        <div class="case-info">
+          <h3>CASE D: 枯れない奇跡のトマト</h3>
+          <p>害虫に強い、夢のトマトを作れ！他の細菌から害虫に効く遺伝子を見つけ、トマトに組み込め。</p>
+        </div>
+      </div>
+      <div class="case-card" onclick="selectCase('E')">
+        <img src="images/tcg_case_e_virus_1778102786499.png" alt="CASE E">
+        <div class="case-info">
+          <h3>CASE E: 未知のウイルスの脅威</h3>
+          <p>街に未知のウイルスが広まりそうだ！遺伝子配列を解析し、mRNAワクチンを設計せよ。</p>
+        </div>
+      </div>
+      <div class="case-card" onclick="selectCase('F')">
+        <img src="images/tcg_case_f_heart_1778102801005.png" alt="CASE F">
+        <div class="case-info">
+          <h3>CASE F: 蘇る心筋</h3>
+          <p>心臓の病気で苦しむ患者を救え！拒絶反応を防ぐため、患者本人の細胞から心筋細胞を作り出せ。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screen: Desk (Game) -->
+  <div id="screen-desk" class="screen" style="max-width: 1000px;">
+    <div class="desk-header">
+      <div class="mission-box">
+        <h4>MISSION</h4>
+        <div id="desk-mission-text" style="font-size: 1.1rem; line-height: 1.6;"></div>
+      </div>
+      <button class="btn accent" style="padding: 10px 20px; font-size: 1rem;" onclick="appraiseRoute()">🔍 AI鑑定を実行</button>
+    </div>
+
+    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 5px;">技術カードをタップしてルートにセットせよ（最大3つ）</p>
+    <div class="route-container" id="route-slots">
+      <div class="route-slot" onclick="removeCardFromSlot(0)" id="slot-0">STEP 1</div>
+      <div class="route-slot" onclick="removeCardFromSlot(1)" id="slot-1">STEP 2</div>
+      <div class="route-slot" onclick="removeCardFromSlot(2)" id="slot-2">STEP 3</div>
+    </div>
+
+    <div class="deck-container">
+      <h4 style="margin-bottom: 15px; color: var(--primary); font-family: 'Orbitron', sans-serif;">TECH CARDS</h4>
+      <div class="deck-grid" id="deck-grid">
+        <!-- Cards generated by JS -->
+      </div>
+    </div>
+    
+    <button class="btn" style="margin-top: 20px; padding: 10px 20px; font-size: 0.9rem; background: transparent; border-color: var(--text-muted); color: var(--text-muted);" onclick="backToCases()">◀ 事件選択へ戻る</button>
+  </div>
+
+  <!-- AI Appraisal Modal -->
+  <div class="modal-overlay" id="appraisal-modal">
+    <div class="modal-content" id="modal-box">
+      <div class="detective-avatar" id="modal-avatar">🕵️</div>
+      <h3 style="margin-bottom: 15px; font-family: 'Orbitron', sans-serif; letter-spacing: 2px;" id="modal-title">AI鑑定中...</h3>
+      <div class="typewriter-text" id="modal-text"></div>
+      <button class="btn" id="modal-btn" onclick="closeModal()">ルートを組み直す</button>
+    </div>
+  </div>
+
+  <!-- Card Detail Modal -->
+  <div id="detail-modal" class="modal-overlay">
+    <div class="modal-content">
+      <img id="detail-img" src="" class="detail-card-img">
+      <div id="detail-name" class="detail-card-name"></div>
+      <div id="detail-desc" class="detail-card-desc"></div>
+      <div class="detail-actions">
+        <button class="btn-add" onclick="confirmAddCard()">この技術を採用する</button>
+        <button class="btn-cancel" onclick="closeDetail()">キャンセル</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== Web Audio API for Detective BGM & SFX =====
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx;
+    let bgmOscillators = [];
+    let isBgmPlaying = false;
+    let currentDetailCardId = null;
+
+    function initAudio() {
+      if (!audioCtx) audioCtx = new AudioContext();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function playSuspenseBGM() {
+      initAudio();
+      if (isBgmPlaying) return;
+      isBgmPlaying = true;
+      
+      const chord = [110.00, 164.81]; // A2, E3 (Low ambient fifth)
+      chord.forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        
+        // Very slow breathing effect
+        const lfo = audioCtx.createOscillator();
+        lfo.type = 'sine';
+        lfo.frequency.value = 0.5; // 0.5Hz
+        const lfoGain = audioCtx.createGain();
+        lfoGain.gain.value = 0.01;
+        lfo.connect(lfoGain);
+        lfoGain.connect(gain.gain);
+        lfo.start();
+        
+        gain.gain.value = 0.02; // Very quiet
+        osc.start();
+        bgmOscillators.push({osc, gain, lfo});
+      });
+    }
+
+    function stopBGM() {
+      bgmOscillators.forEach(n => {
+        n.gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1);
+        setTimeout(() => { n.osc.stop(); n.lfo.stop(); }, 1000);
+      });
+      bgmOscillators = [];
+      isBgmPlaying = false;
+    }
+
+    function playSelectSFX() {
+      initAudio();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+    }
+
+    function playThinkSFX() {
+      initAudio();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+      osc.frequency.linearRampToValueAtTime(50, audioCtx.currentTime + 0.5);
+      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+    }
+
+    function playSuccessSFX() {
+      initAudio();
+      [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => { // C E G C
+        setTimeout(() => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.connect(gain); gain.connect(audioCtx.destination);
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+          osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+        }, i * 150);
+      });
+    }
+
+    // ===== Game Data =====
+    const TECH_CARDS = [
+      { id: 'pcr', img: 'images/tcg_tech_3_pcr_1777535886395.png', name: 'PCR法', desc: '微量なDNAを大量に増幅する。文字(配列)は読めない。' },
+      { id: 'sanger', img: 'images/card_sequencing.png', name: 'サンガー法', desc: 'DNAの塩基配列を読み取る。精度は高いが時間はかかる。' },
+      { id: 'ngs', img: 'images/tcg_tech_4_ngs_1777535901599.png', name: 'NGS', desc: '大量のDNA配列を高速に読み取る次世代シークエンサー。' },
+      { id: 'blast', img: 'images/card_blast.png', name: 'BLAST検索', desc: '配列データをデータベースと照合し、生物種や機能を特定する。' },
+      { id: 'transfer', img: 'images/tcg_tech_1_gene_transfer_1777535856506.png', name: '遺伝子導入', desc: 'プラスミド等を用いて、細胞に新たなDNAを組み込む。' },
+      { id: 'rnaseq', img: 'images/tcg_tech_7_rnaseq_1777535965879.png', name: 'RNA-seq', desc: 'どの遺伝子がどれくらい働いているか(発現量)を網羅的に調べる。' },
+      { id: 'crispr', img: 'images/tcg_tech_5_crispr_1777535935961.png', name: 'CRISPR-Cas9', desc: '特定の遺伝子を狙って破壊したり書き換えたりするゲノム編集。' },
+      { id: 'electro', img: 'images/tcg_tech_2_electrophoresis_1777535870997.png', name: '電気泳動', desc: 'DNAを長さに分けて確認する。' },
+      { id: 'agrobacterium', img: 'images/tcg_tech_agrobacterium_1778079805670.png', name: 'アグロバクテリウム法', desc: '植物細胞に遺伝子を運び込む天然の運び屋。プラスミドを植物に組み込む。' },
+      { id: 'culture', img: 'images/tcg_tech_culture_1778102654888.png', name: '組織培養', desc: '遺伝子を入れた植物細胞を、栄養のある培地で育てて完全な植物体に再生させる。' },
+      { id: 'antigen', img: 'images/tcg_tech_antigen_1778102667101.png', name: '抗原検査', desc: 'ウイルス特有のタンパク質を検出する。時間は早いが精度はPCRより低い。' },
+      { id: 'mrna_vac', img: 'images/tcg_tech_mrna_vac_1778102683495.png', name: 'mRNAワクチン設計', desc: 'ウイルスの突起の設計図（mRNA）を合成し、脂質のカプセルで包んでワクチンを作る。' },
+      { id: 'ips', img: 'images/tcg_tech_ips_1778102713304.png', name: 'iPS細胞化', desc: '体細胞に数種類の遺伝子（山中因子）を入れ、どんな細胞にもなれる万能細胞を人工的に作る。' },
+      { id: 'es', img: 'images/tcg_tech_es_1778102725441.png', name: 'ES細胞', desc: '受精卵の初期胚から作られる万能細胞。他人の細胞から作るため拒絶反応のリスクがある。' }
+    ];
+
+    const CASES = {
+      'A': { title: '謎の酵母事件', mission: '新種の酵母の正体（生物種）を突き止めろ。ただし、手元にあるDNAはごくわずかだ。' },
+      'B': { title: 'インスリン製造計画', mission: '大腸菌にヒトの「インスリン」を作らせろ。ヒトの遺伝子をどうやって大腸菌で働かせる？' },
+      'C': { title: 'がん細胞の真犯人', mission: 'がん細胞で異常に働いている未知の遺伝子を見つけ出し、それが本当にガンの原因であることを「証明」しろ。' },
+      'D': { title: '枯れない奇跡のトマト', mission: '害虫に強い、夢のトマトを作れ！他の細菌から害虫に効く遺伝子を見つけ、トマトに組み込め。' },
+      'E': { title: '未知のウイルスの脅威', mission: '街に未知のウイルスが広まりそうだ！早急にウイルスの遺伝子配列を解析し、それを防ぐ最先端のmRNAワクチンを設計せよ。' },
+      'F': { title: '蘇る心筋', mission: '心臓の病気で苦しむ患者を救え！拒絶反応を防ぐため、患者本人の細胞から健康な心筋細胞を作り出せ。' }
+    };
+
+    let currentCase = null;
+    let currentRoute = [null, null, null]; // max 3 steps
+
+    // ===== Logic =====
+    function switchScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    function initGame() {
+      playSelectSFX();
+      switchScreen('screen-cases');
+      playSuspenseBGM();
+    }
+
+    function selectCase(caseId) {
+      playSelectSFX();
+      currentCase = caseId;
+      currentRoute = [null, null, null];
+      
+      document.getElementById('desk-mission-text').innerHTML = `<strong>${CASES[caseId].title}</strong><br>${CASES[caseId].mission}`;
+      
+      renderDeck();
+      renderSlots();
+      switchScreen('screen-desk');
+    }
+
+    function backToCases() {
+      playSelectSFX();
+      switchScreen('screen-cases');
+    }
+
+    function renderDeck() {
+      const grid = document.getElementById('deck-grid');
+      grid.innerHTML = '';
+      TECH_CARDS.forEach(card => {
+        const isUsed = currentRoute.includes(card.id);
+        const div = document.createElement('div');
+        div.className = `tech-card ${isUsed ? 'used' : ''}`;
+        div.innerHTML = `
+          <img src="${card.img}" alt="${card.name}">
+          <div class="tech-name">${card.name}</div>
+        `;
+        if (!isUsed) div.onclick = () => showCardDetail(card.id);
+        grid.appendChild(div);
+      });
+    }
+
+    function showCardDetail(cardId) {
+      const card = TECH_CARDS.find(c => c.id === cardId);
+      if (!card) return;
+      
+      currentDetailCardId = cardId;
+      document.getElementById('detail-img').src = card.img;
+      document.getElementById('detail-name').innerText = card.name;
+      document.getElementById('detail-desc').innerText = card.desc;
+      document.getElementById('detail-modal').classList.add('show');
+      
+      playSelectSFX();
+    }
+
+    function closeDetail() {
+      document.getElementById('detail-modal').classList.remove('show');
+    }
+
+    function confirmAddCard() {
+      if (currentDetailCardId) {
+        addCardToRoute(currentDetailCardId);
+        closeDetail();
+      }
+    }
+
+    function renderSlots() {
+      for (let i = 0; i < 3; i++) {
+        const slot = document.getElementById(`slot-${i}`);
+        const cardId = currentRoute[i];
+        if (cardId) {
+          const card = TECH_CARDS.find(c => c.id === cardId);
+          slot.classList.add('filled');
+          slot.innerHTML = `
+            <div class="tech-card" style="cursor:pointer;">
+              <img src="${card.img}" alt="${card.name}">
+              <div class="tech-name">${card.name}</div>
+            </div>
+          `;
+        } else {
+          slot.classList.remove('filled');
+          slot.innerHTML = `STEP ${i + 1}`;
+        }
+      }
+    }
+
+    function addCardToRoute(cardId) {
+      const emptyIdx = currentRoute.indexOf(null);
+      if (emptyIdx !== -1) {
+        playSelectSFX();
+        currentRoute[emptyIdx] = cardId;
+        renderDeck();
+        renderSlots();
+      }
+    }
+
+    function removeCardFromSlot(index) {
+      if (currentRoute[index]) {
+        playSelectSFX();
+        currentRoute[index] = null;
+        renderDeck();
+        renderSlots();
+      }
+    }
+
+    // ===== Appraisal Engine =====
+    function appraiseRoute() {
+      const route = currentRoute.filter(c => c !== null);
+      if (route.length === 0) return; // do nothing if empty
+
+      playThinkSFX();
+      showModal("AI鑑定中...", "推理を分析している...", false);
+      document.getElementById('modal-btn').style.display = 'none';
+
+      setTimeout(() => {
+        const res = evaluateLogic(currentCase, route);
+        if (res.success) {
+          playSuccessSFX();
+          showModal("鑑定結果：真実到達！", res.msg, true);
+          document.getElementById('modal-btn').innerText = "次の事件へ";
+          document.getElementById('modal-btn').onclick = () => { closeModal(); backToCases(); };
+        } else {
+          playErrorSFX();
+          showModal("鑑定結果：論理エラー", res.msg, false);
+          document.getElementById('modal-btn').innerText = "ルートを組み直す";
+          document.getElementById('modal-btn').onclick = closeModal;
+        }
+        document.getElementById('modal-btn').style.display = 'inline-block';
+      }, 1500);
+    }
+
+    function playErrorSFX() {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.type = 'sawtooth';
+      osc.frequency.value = 150;
+      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+      gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+    }
+
+    function evaluateLogic(caseId, r) {
+      const ids = r.join(',');
+      
+      if (caseId === 'A') { // PCR -> Sanger/NGS -> BLAST
+        if (r[0] === 'blast') return { success: false, msg: "BLASTをするための「塩基配列データ」がまだないぞ！まずは配列を読む必要がある。" };
+        if (r.includes('pcr') && r.includes('blast') && !r.includes('sanger') && !r.includes('ngs')) {
+          return { success: false, msg: "PCRでDNAの量は増えたが、配列（文字）自体は読めていない！サンガー法かNGSが必要だ。" };
+        }
+        if (r[0] === 'pcr' && (r[1] === 'sanger' || r[1] === 'ngs') && r[2] === 'blast') {
+          return { success: true, msg: "完璧な推理だ！少量のDNAを増やし、配列を読み、データベースと照合する。見事に酵母の正体を突き止めた！" };
+        }
+        return { success: false, msg: "この順番では目的の『生物種の特定』には届かないようだ。「増やす」「読む」「比較する」の手順を思い出せ。" };
+      }
+      
+      if (caseId === 'B') { // PCR -> Transfer -> (optional)
+        if (r.includes('crispr')) return { success: false, msg: "今回は大腸菌に新たな遺伝子を『追加』したいだけだ。狙って壊すゲノム編集（CRISPR）は本当に必要か？" };
+        if (r.includes('pcr') && !r.includes('transfer')) return { success: false, msg: "インスリンの遺伝子を増やしても、大腸菌の中に入れなければ働かないぞ！「遺伝子導入」が必要だ。" };
+        if (r[0] === 'pcr' && r[1] === 'transfer') {
+          return { success: true, msg: "見事なルートだ！ヒトの遺伝子を増幅し、プラスミド等を用いて大腸菌に導入する。これでインスリン工場が稼働するぞ！" };
+        }
+        return { success: false, msg: "インスリンを作らせるには、「遺伝子を用意する」ことと「細胞に入れる」ことの両方が必要だ。" };
+      }
+
+      if (caseId === 'C') { // RNA-seq -> BLAST/NGS -> CRISPR
+        if (r[0] === 'pcr') return { success: false, msg: "がん細胞で異常になっている遺伝子は「未知」で、何万個もある。1箇所だけ増やすPCRでは太刀打ちできない！全体を見る技術はどれだ？" };
+        if (r.includes('rnaseq') && !r.includes('crispr')) return { success: false, msg: "RNA-seqで発現量の違いは見つけられた。しかし、それが原因であることを『証明』するには、実際にその遺伝子を壊して確かめる技術が必要だ。" };
+        if (r[0] === 'rnaseq' && r.includes('crispr')) {
+          return { success: true, msg: "素晴らしい！RNA-seqで異常な遺伝子を網羅的に見つけ出し、CRISPR-Cas9でその遺伝子を破壊して働きを証明する。事件解決だ！" };
+        }
+        return { success: false, msg: "がんの真犯人を見つけるには、まず「全体の発現量を調べる」こと、そして「見つけた遺伝子を壊して証明する」ことが必要だ。" };
+      }
+
+      if (caseId === 'D') { // PCR -> agrobacterium -> culture
+        if (r.includes('transfer') && !r.includes('agrobacterium')) return { success: false, msg: "大腸菌に遺伝子を入れるなら通常の遺伝子導入（プラスミド）だが、植物にはアグロバクテリウムが適しているぞ！" };
+        if (r.includes('agrobacterium') && !r.includes('culture')) return { success: false, msg: "細胞に遺伝子は入ったが、それだけではトマトの「実」はできない。植物体に育てる技術が必要だ！" };
+        if (r[0] === 'pcr' && r[1] === 'agrobacterium' && r[2] === 'culture') {
+          return { success: true, msg: "完璧なルートだ！害虫に強い遺伝子を増やし、アグロバクテリウムでトマト細胞に運び込み、組織培養で植物体に育て上げた！" };
+        }
+        return { success: false, msg: "害虫耐性遺伝子をトマトに組み込むには、「遺伝子増幅」「植物への運搬」「植物体への再生」という3ステップが必要だ。" };
+      }
+
+      if (caseId === 'E') { // ngs or sanger -> mrna_vac
+        if (r.includes('antigen') && r.includes('mrna_vac') && !r.includes('ngs') && !r.includes('sanger')) {
+          return { success: false, msg: "抗原検査でウイルスがいることは分かったが、ワクチンの設計図を作るにはウイルスの『遺伝子配列』を読む必要があるぞ！" };
+        }
+        if ((r.includes('ngs') || r.includes('sanger')) && !r.includes('mrna_vac')) {
+          return { success: false, msg: "配列は読めたが、ワクチンを作らなければ街を救えない！" };
+        }
+        if ((r[0] === 'ngs' || r[0] === 'sanger') && r[1] === 'mrna_vac') {
+          return { success: true, msg: "素晴らしい！次世代シークエンサーでウイルスの設計図を読み解き、最先端のmRNAワクチンを設計した。これで多くの人を救えるぞ！" };
+        }
+        return { success: false, msg: "ウイルスの配列をまず『読む』こと、そしてその情報を使ってmRNAワクチンを『設計』することが必要だ。" };
+      }
+
+      if (caseId === 'F') { // ips -> culture
+        if (r.includes('es') && r.includes('culture') && !r.includes('ips')) {
+          return { success: false, msg: "ES細胞から心筋細胞は作れるが、受精卵から作るため患者の遺伝子とは異なり、移植時に拒絶反応が起きてしまうぞ！患者自身の細胞から作るならアレだ！" };
+        }
+        if (r.includes('ips') && !r.includes('culture')) {
+          return { success: false, msg: "iPS細胞を作れた！だが、それを心筋細胞に分化させるには培養技術が必要だ。" };
+        }
+        if (r[0] === 'ips' && r[1] === 'culture') {
+          return { success: true, msg: "見事だ！患者自身の細胞をiPS細胞に初期化し、それを心筋細胞へと分化・培養させた。拒絶反応のない夢の治療法だ！" };
+        }
+        return { success: false, msg: "拒絶反応を防ぐには患者自身の細胞を使うことが鍵だ。万能細胞に初期化してから、心筋細胞に育てる手順を考えよう。" };
+      }
+
+      return { success: false, msg: "技術のつながりが論理的ではないようだ。もう一度目的に立ち返って考えよう。" };
+    }
+
+    // ===== Modal Handling =====
+    let typeInterval;
+    function showModal(title, text, isSuccess) {
+      const modal = document.getElementById('appraisal-modal');
+      const box = document.getElementById('modal-box');
+      const avatar = document.getElementById('modal-avatar');
+      
+      document.getElementById('modal-title').innerText = title;
+      
+      box.className = 'modal-content ' + (isSuccess ? 'success' : 'error');
+      avatar.innerText = isSuccess ? '💡' : '🤔';
+      
+      modal.classList.add('show');
+      
+      // Typewriter effect
+      const textEl = document.getElementById('modal-text');
+      textEl.innerHTML = '';
+      clearInterval(typeInterval);
+      
+      if (!text) return;
+      
+      let i = 0;
+      typeInterval = setInterval(() => {
+        textEl.innerHTML += text.charAt(i);
+        i++;
+        if (i >= text.length) clearInterval(typeInterval);
+      }, 30); // typing speed
+    }
+
+    function closeModal() {
+      clearInterval(typeInterval);
+      document.getElementById('appraisal-modal').classList.remove('show');
+    }
+
+  </script>
+</body>
+</html>

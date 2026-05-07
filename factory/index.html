@@ -1,0 +1,1578 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Gene Vector Quest">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="format-detection" content="telephone=no">
+  <title>Gene Vector Quest - 遺伝子組換えシミュレーション</title>
+  <style>
+    :root {
+      --ink: #17202a;
+      --muted: #607080;
+      --paper: #fbfaf6;
+      --panel: #ffffff;
+      --line: #d7dee8;
+      --teal: #00a7a5;
+      --teal-dark: #047f7d;
+      --coral: #f05d5e;
+      --amber: #f6b73c;
+      --leaf: #35b66f;
+      --blue: #2c80d3;
+      --violet: #7e5bef;
+      --shadow: 0 14px 34px rgba(24, 35, 52, 0.12);
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; }
+    html {
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%;
+    }
+    body {
+      margin: 0;
+      min-height: var(--app-height, 100dvh);
+      padding:
+        env(safe-area-inset-top)
+        env(safe-area-inset-right)
+        env(safe-area-inset-bottom)
+        env(safe-area-inset-left);
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(0, 167, 165, 0.14), transparent 34rem),
+        linear-gradient(180deg, #eef9f7 0%, var(--paper) 34%, #f7f4eb 100%);
+      font-family: "Hiragino Sans", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+      line-height: 1.65;
+      overscroll-behavior-y: none;
+    }
+
+    button, input, select { font: inherit; }
+    button {
+      min-height: 44px;
+      border: 0;
+      border-radius: var(--radius);
+      cursor: pointer;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+    }
+    button:focus-visible, .enzyme-card:focus-visible, .colony:focus-visible {
+      outline: 3px solid rgba(246, 183, 60, 0.75);
+      outline-offset: 3px;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      button:hover { transform: translateY(-1px); }
+    }
+    button:active, button.is-pressing { transform: scale(0.985); }
+    button:disabled { cursor: not-allowed; opacity: 0.55; transform: none; }
+
+    .app-shell {
+      width: min(1180px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 18px 0 36px;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: center;
+      padding: 12px 0;
+      backdrop-filter: blur(12px);
+    }
+
+    .brand {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      min-width: 0;
+    }
+    .logo {
+      width: 46px;
+      height: 46px;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-weight: 900;
+      border-radius: var(--radius);
+      background: conic-gradient(from 150deg, var(--teal), var(--blue), var(--leaf), var(--teal));
+      box-shadow: var(--shadow);
+    }
+    h1 {
+      margin: 0;
+      font-size: 25px;
+      line-height: 1.15;
+      letter-spacing: 0;
+    }
+    .subtitle {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .hud {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .hud-pill {
+      min-width: 88px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.88);
+      box-shadow: 0 8px 20px rgba(24, 35, 52, 0.06);
+    }
+    .hud-pill span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.2;
+    }
+    .hud-pill strong {
+      display: block;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    .mission-tabs {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(120px, 1fr));
+      gap: 8px;
+      margin: 10px 0 16px;
+    }
+    .tab-btn {
+      min-height: 52px;
+      padding: 8px 10px;
+      color: var(--ink);
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.78);
+      text-align: left;
+    }
+    .tab-btn strong, .tab-btn span { display: block; }
+    .tab-btn strong { font-size: 13px; }
+    .tab-btn span { color: var(--muted); font-size: 12px; }
+    .tab-btn.active {
+      color: white;
+      border-color: transparent;
+      background: linear-gradient(135deg, var(--teal-dark), var(--blue));
+      box-shadow: var(--shadow);
+    }
+    .tab-btn.active span { color: rgba(255, 255, 255, 0.78); }
+    .tab-btn.locked { opacity: 0.48; }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 16px;
+      align-items: start;
+    }
+    .stage-panel, .side-panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: var(--shadow);
+    }
+    .stage-panel {
+      overflow: hidden;
+      touch-action: pan-y;
+    }
+    .stage-head {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: start;
+      padding: 18px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(90deg, rgba(0, 167, 165, 0.13), rgba(246, 183, 60, 0.11));
+    }
+    .stage-kicker {
+      margin: 0 0 4px;
+      color: var(--teal-dark);
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .stage-title {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.25;
+    }
+    .stage-desc {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .stage-tag {
+      min-width: 90px;
+      padding: 8px 10px;
+      text-align: center;
+      color: white;
+      border-radius: var(--radius);
+      background: var(--ink);
+      font-weight: 800;
+    }
+    .stage-body { padding: 18px; }
+
+    .lab-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(250px, 0.95fr);
+      gap: 16px;
+      align-items: start;
+    }
+    .toolbox, .workbench, .note-box {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+    }
+    .toolbox, .workbench { padding: 14px; }
+    .section-label {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin: 0 0 12px;
+      font-weight: 800;
+    }
+    .section-label::before {
+      content: "";
+      width: 10px;
+      height: 22px;
+      border-radius: 3px;
+      background: var(--teal);
+    }
+
+    .enzyme-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .enzyme-card {
+      min-height: 116px;
+      padding: 12px;
+      border: 2px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      text-align: left;
+      color: var(--ink);
+    }
+    .enzyme-card.selected {
+      border-color: var(--teal);
+      background: #effffd;
+      box-shadow: 0 10px 24px rgba(0, 167, 165, 0.12);
+    }
+    .enzyme-card .enzyme-name {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-weight: 900;
+      font-size: 16px;
+    }
+    .enzyme-card .site {
+      display: inline-block;
+      margin: 8px 0 6px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: #eef2f7;
+      font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+      font-size: 14px;
+    }
+    .enzyme-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .visual-stage {
+      min-height: 315px;
+      display: grid;
+      place-items: center;
+      position: relative;
+      overflow: hidden;
+      padding: 12px;
+      border: 1px dashed #b9c7d7;
+      border-radius: var(--radius);
+      background:
+        linear-gradient(90deg, rgba(44, 128, 211, 0.08) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(44, 128, 211, 0.08) 1px, transparent 1px),
+        #f9fcff;
+      background-size: 24px 24px;
+    }
+
+    .dna-wrap {
+      width: 100%;
+      display: grid;
+      gap: 16px;
+      align-content: center;
+    }
+    .dna-row {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      min-height: 42px;
+      padding: 8px 6px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .base {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border-radius: 6px;
+      color: #0d1b2a;
+      background: #dfeeff;
+      border: 1px solid #b9d5f5;
+      font-weight: 900;
+      font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    }
+    .base.target { background: #d9f8e8; border-color: #91d7b0; }
+    .base.site-a { background: #ffe7d9; border-color: #f2a06f; }
+    .base.site-b { background: #e9e3ff; border-color: #b9a9ff; }
+    .cut-mark {
+      position: absolute;
+      top: 2px;
+      width: 4px;
+      height: 88px;
+      border-radius: 4px;
+      background: var(--coral);
+      box-shadow: 0 0 0 4px rgba(240, 93, 94, 0.16);
+      transform: rotate(9deg);
+      animation: pulseCut 1.2s infinite;
+    }
+    .cut-left { left: 20%; }
+    .cut-right { right: 20%; }
+    @keyframes pulseCut {
+      0%, 100% { opacity: 0.65; transform: rotate(9deg) scaleY(0.96); }
+      50% { opacity: 1; transform: rotate(9deg) scaleY(1.08); }
+    }
+
+    .plasmid-area {
+      width: min(360px, 100%);
+      aspect-ratio: 1;
+      position: relative;
+      display: grid;
+      place-items: center;
+    }
+    .plasmid-ring {
+      width: 78%;
+      height: 78%;
+      border-radius: 50%;
+      border: 24px solid #d7e9f8;
+      position: relative;
+      box-shadow: inset 0 0 0 2px #8fc0e8, 0 12px 28px rgba(24, 35, 52, 0.1);
+    }
+    .plasmid-ring::before {
+      content: "";
+      position: absolute;
+      inset: -24px;
+      border-radius: 50%;
+      border: 24px solid transparent;
+      border-top-color: var(--leaf);
+      border-right-color: var(--leaf);
+      transform: rotate(18deg);
+    }
+    .plasmid-ring::after {
+      content: "";
+      position: absolute;
+      inset: -24px;
+      border-radius: 50%;
+      border: 24px solid transparent;
+      border-left-color: #8a8f98;
+      transform: rotate(-24deg);
+    }
+    .plasmid-open .plasmid-ring {
+      border-right-color: transparent;
+      border-bottom-color: transparent;
+      border-radius: 50% 50% 45% 50%;
+    }
+    .gene-label {
+      position: absolute;
+      padding: 5px 8px;
+      border-radius: 6px;
+      color: white;
+      font-size: 12px;
+      font-weight: 800;
+      box-shadow: 0 8px 16px rgba(24, 35, 52, 0.16);
+    }
+    .label-ori { top: 28%; left: 12%; background: #8a8f98; }
+    .label-amp { bottom: 24%; left: 16%; background: #5d6673; }
+    .label-lacz { top: 26%; right: 10%; background: var(--blue); }
+    .label-mcs { top: 48%; right: 7%; background: var(--coral); }
+    .insert-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 8px;
+      padding: 9px 12px;
+      border-radius: var(--radius);
+      color: #063a25;
+      background: #dff8ec;
+      border: 1px solid #92dcb6;
+      font-weight: 900;
+    }
+    .end-tag {
+      padding: 3px 7px;
+      border-radius: 5px;
+      color: white;
+      background: var(--teal-dark);
+      font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+      font-size: 12px;
+    }
+    .ligation-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      width: 100%;
+    }
+    .match-slot {
+      min-height: 92px;
+      padding: 10px;
+      border: 2px dashed #b9c7d7;
+      border-radius: var(--radius);
+      background: #fff;
+      text-align: center;
+    }
+    .match-slot.done {
+      border-color: var(--leaf);
+      background: #effbf4;
+    }
+    .match-slot strong { display: block; }
+    .ligase-beam {
+      width: min(420px, 94%);
+      height: 12px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--teal), var(--amber), var(--coral));
+      opacity: 0.45;
+      margin: 16px auto 0;
+      transform-origin: center;
+    }
+    .beam-on { animation: ligaseBeam 0.8s ease-in-out 2; }
+    @keyframes ligaseBeam {
+      0%, 100% { transform: scaleX(0.72); opacity: 0.4; }
+      50% { transform: scaleX(1); opacity: 1; }
+    }
+
+    .plate-wrap {
+      width: min(390px, 100%);
+      aspect-ratio: 1.1;
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+    .petri {
+      width: 92%;
+      height: 82%;
+      border-radius: 50%;
+      position: relative;
+      overflow: hidden;
+      border: 12px solid rgba(126, 176, 184, 0.42);
+      background:
+        radial-gradient(circle at 34% 30%, rgba(255,255,255,0.9), transparent 16%),
+        #f7e3b2;
+      box-shadow: inset 0 0 24px rgba(92, 64, 30, 0.12), 0 18px 34px rgba(24, 35, 52, 0.12);
+    }
+    .colony {
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid rgba(24, 35, 52, 0.1);
+      box-shadow: 0 2px 6px rgba(24, 35, 52, 0.14);
+      display: grid;
+      place-items: center;
+      color: transparent;
+    }
+    .colony.white { background: #fffef7; }
+    .colony.blue { background: #3d8fe0; }
+    .colony.selected {
+      box-shadow: 0 0 0 5px rgba(53, 182, 111, 0.28), 0 2px 6px rgba(24, 35, 52, 0.14);
+      transform: scale(1.12);
+    }
+    .plate-options {
+      display: grid;
+      gap: 8px;
+    }
+    .choice-btn {
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      text-align: left;
+    }
+    .choice-btn.selected {
+      color: white;
+      border-color: transparent;
+      background: var(--teal-dark);
+      box-shadow: 0 10px 22px rgba(0, 167, 165, 0.18);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .primary-btn, .secondary-btn, .danger-btn {
+      min-height: 48px;
+      padding: 10px 14px;
+      font-weight: 900;
+    }
+    .primary-btn {
+      color: white;
+      background: linear-gradient(135deg, var(--teal-dark), var(--blue));
+      box-shadow: 0 10px 22px rgba(0, 127, 125, 0.22);
+    }
+    .secondary-btn {
+      color: var(--ink);
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+    .danger-btn {
+      color: white;
+      background: var(--coral);
+    }
+
+    .feedback {
+      min-height: 52px;
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-left: 5px solid var(--line);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      background: #f7f9fb;
+      color: var(--muted);
+    }
+    .feedback.good {
+      border-left-color: var(--leaf);
+      background: #effbf4;
+      color: #1e6b43;
+    }
+    .feedback.warn {
+      border-left-color: var(--amber);
+      background: #fff8e6;
+      color: #7b5512;
+    }
+    .feedback.bad {
+      border-left-color: var(--coral);
+      background: #fff1f1;
+      color: #9d3030;
+    }
+
+    .side-panel { padding: 14px; }
+    .progress-track {
+      height: 12px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #e7edf4;
+    }
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--teal), var(--amber), var(--leaf));
+      transition: width 0.35s ease;
+    }
+    .badge-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .badge {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 9px;
+      align-items: center;
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+    .badge-icon {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      color: white;
+      border-radius: 50%;
+      background: #aab5c2;
+      font-weight: 900;
+    }
+    .badge.unlocked .badge-icon { background: var(--amber); color: #342306; }
+    .badge strong { display: block; font-size: 13px; }
+    .badge span { display: block; color: var(--muted); font-size: 12px; line-height: 1.35; }
+    .note-box {
+      margin-top: 12px;
+      padding: 12px;
+      color: var(--muted);
+      background: #fbfcfe;
+      font-size: 13px;
+    }
+    .note-box strong { color: var(--ink); }
+    .log-list {
+      max-height: 190px;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 0;
+      margin: 8px 0 0;
+      list-style: none;
+      display: grid;
+      gap: 7px;
+    }
+    .log-list li {
+      padding: 7px 8px;
+      border-radius: 6px;
+      background: #f1f5f9;
+      font-size: 12px;
+      color: #455466;
+    }
+
+    .quiz-grid {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .quiz-item {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+    .quiz-item p { margin: 0 0 8px; font-weight: 800; }
+    .quiz-options {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .certificate {
+      display: none;
+      margin-top: 16px;
+      padding: 16px;
+      border: 2px solid var(--amber);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(135deg, rgba(246, 183, 60, 0.16), rgba(53, 182, 111, 0.12)),
+        #fffefa;
+    }
+    .certificate.show { display: block; }
+    .reward-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .reward-card {
+      min-height: 96px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+    .reward-card strong { display: block; margin-bottom: 4px; }
+    .reward-card span { color: var(--muted); font-size: 13px; }
+
+    .opening {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      color: white;
+      background:
+        radial-gradient(circle at 24% 28%, rgba(0, 167, 165, 0.55), transparent 22rem),
+        radial-gradient(circle at 70% 68%, rgba(246, 183, 60, 0.42), transparent 18rem),
+        linear-gradient(135deg, #0d1b2a, #132f44 58%, #0a2630);
+      overflow: hidden;
+    }
+    .opening.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.55s ease;
+    }
+    .opening-card {
+      width: min(880px, 100%);
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 22px;
+      align-items: center;
+    }
+    .opening h2 {
+      margin: 0;
+      font-size: 44px;
+      line-height: 1.12;
+      letter-spacing: 0;
+    }
+    .opening p {
+      color: rgba(255, 255, 255, 0.78);
+      font-size: 16px;
+    }
+    .opening .primary-btn {
+      background: linear-gradient(135deg, var(--amber), var(--leaf));
+      color: #13200d;
+    }
+    .helix {
+      position: relative;
+      height: 330px;
+    }
+    .helix span {
+      position: absolute;
+      left: 50%;
+      width: 180px;
+      height: 10px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--coral), #fff, var(--teal));
+      transform: translateX(-50%) rotate(var(--rot));
+      animation: floatHelix 2.8s ease-in-out infinite;
+      animation-delay: var(--delay);
+    }
+    .helix span::before, .helix span::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      transform: translateY(-50%);
+      background: #fff;
+    }
+    .helix span::before { left: -4px; }
+    .helix span::after { right: -4px; }
+    @keyframes floatHelix {
+      0%, 100% { opacity: 0.62; transform: translateX(-50%) rotate(var(--rot)) scaleX(0.78); }
+      50% { opacity: 1; transform: translateX(-50%) rotate(calc(var(--rot) + 18deg)) scaleX(1); }
+    }
+
+    .confetti-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .confetti {
+      position: absolute;
+      top: -12px;
+      width: 10px;
+      height: 16px;
+      background: var(--teal);
+      animation: confettiFall 1.8s linear forwards;
+    }
+    @keyframes confettiFall {
+      to { transform: translateY(110vh) rotate(720deg); opacity: 0.9; }
+    }
+
+    .tiny {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media (pointer: coarse) {
+      body { font-size: 16px; }
+      .app-shell { width: min(100% - 32px, 1180px); }
+      .tab-btn {
+        min-height: 66px;
+        padding: 12px 14px;
+      }
+      .tab-btn strong { font-size: 15px; }
+      .tab-btn span { font-size: 13px; }
+      .stage-head { padding: 20px; }
+      .stage-body { padding: 20px; }
+      .toolbox, .workbench { padding: 16px; }
+      .enzyme-grid, .plate-options, .quiz-options, .actions {
+        gap: 12px;
+      }
+      .enzyme-card {
+        min-height: 132px;
+        padding: 16px;
+      }
+      .choice-btn {
+        min-height: 56px;
+        padding: 13px 15px;
+      }
+      .match-slot {
+        min-height: 112px;
+        padding: 14px;
+      }
+      .primary-btn, .secondary-btn, .danger-btn {
+        min-height: 56px;
+        padding: 13px 18px;
+      }
+      .visual-stage { min-height: 350px; }
+      .base {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+      }
+      .colony {
+        width: 44px;
+        height: 44px;
+      }
+      .colony.selected {
+        box-shadow: 0 0 0 7px rgba(53, 182, 111, 0.28), 0 2px 6px rgba(24, 35, 52, 0.14);
+      }
+      .feedback {
+        min-height: 64px;
+        padding: 13px 15px;
+      }
+      .opening {
+        padding: max(28px, env(safe-area-inset-top)) max(28px, env(safe-area-inset-right)) max(28px, env(safe-area-inset-bottom)) max(28px, env(safe-area-inset-left));
+      }
+      .opening .primary-btn {
+        min-height: 60px;
+        padding-inline: 22px;
+      }
+    }
+
+    @media (min-width: 981px) and (max-width: 1180px) {
+      .app-shell { width: min(100% - 30px, 1060px); }
+      .main-grid { grid-template-columns: minmax(0, 1fr) 292px; }
+      .side-panel {
+        position: sticky;
+        top: 100px;
+        max-height: calc(100dvh - 118px);
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .lab-layout {
+        grid-template-columns: 1fr;
+      }
+      .enzyme-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 980px) {
+      .topbar, .main-grid, .lab-layout, .opening-card {
+        grid-template-columns: 1fr;
+      }
+      .hud { justify-content: flex-start; }
+      .mission-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .side-panel { order: -1; }
+      .opening h2 { font-size: 34px; }
+      .helix { height: 220px; }
+    }
+
+    @media (min-width: 700px) and (max-width: 980px) {
+      .mission-tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .badge-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .note-box { font-size: 14px; }
+      .visual-stage { min-height: 360px; }
+    }
+
+    @media (max-width: 620px) {
+      .app-shell { width: min(100% - 18px, 1180px); padding-top: 8px; }
+      .mission-tabs, .enzyme-grid, .ligation-grid, .quiz-options, .reward-cards {
+        grid-template-columns: 1fr;
+      }
+      .stage-head { grid-template-columns: 1fr; }
+      h1 { font-size: 21px; }
+      .stage-title { font-size: 21px; }
+      .base {
+        width: 26px;
+        height: 28px;
+        font-size: 13px;
+      }
+      .opening h2 { font-size: 29px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="opening" id="opening">
+    <div class="opening-card">
+      <div>
+        <p class="stage-kicker">Virtual Biology Lab</p>
+        <h2>Gene Vector Quest<br>遺伝子組換えミッション</h2>
+        <p>制限酵素でDNAを切り、プラスミドを開き、リガーゼでつなぎ、選抜で「組換えが起きた証拠」を見つけます。これは高校生向けの概念シミュレーションです。</p>
+        <button class="primary-btn" id="startBtn">任務開始</button>
+      </div>
+      <div class="helix" aria-hidden="true" id="helix"></div>
+    </div>
+  </div>
+
+  <div class="confetti-layer" id="confettiLayer"></div>
+
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">GQ</div>
+        <div>
+          <h1>Gene Vector Quest</h1>
+          <p class="subtitle">遺伝子組換えを体験的に学ぶゲーミフィケーション教材</p>
+        </div>
+      </div>
+      <div class="hud" aria-label="スコア表示">
+        <div class="hud-pill"><span>Score</span><strong id="score">0</strong></div>
+        <div class="hud-pill"><span>Combo</span><strong id="combo">0</strong></div>
+        <div class="hud-pill"><span>Rank</span><strong id="rank">Rookie</strong></div>
+      </div>
+    </header>
+
+    <nav class="mission-tabs" id="tabs" aria-label="ミッション"></nav>
+
+    <section class="main-grid">
+      <article class="stage-panel">
+        <div class="stage-head">
+          <div>
+            <p class="stage-kicker" id="stageKicker">Mission 1</p>
+            <h2 class="stage-title" id="stageTitle">DNAを切り出す</h2>
+            <p class="stage-desc" id="stageDesc">目的遺伝子の両端を、相補的な付着端ができる制限酵素で切ります。</p>
+          </div>
+          <div class="stage-tag" id="stageTag">LOCK 解除</div>
+        </div>
+        <div class="stage-body" id="stageBody"></div>
+      </article>
+
+      <aside class="side-panel">
+        <p class="section-label">進行状況</p>
+        <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+        <div class="badge-list" id="badgeList"></div>
+        <div class="note-box">
+          <strong>安全メモ</strong>
+          <p>この教材は仮想シミュレーションです。実際の実験条件、培養条件、操作量は扱わず、「なぜその操作を選ぶのか」を学ぶ設計にしています。</p>
+        </div>
+        <div class="note-box">
+          <strong>ラボログ</strong>
+          <ul class="log-list" id="logList"></ul>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const enzymes = {
+      EcoRI: {
+        site: "GAATTC",
+        end: "AATT",
+        note: "付着端を作る。目的遺伝子の左端とMCSに対応。",
+        color: "#f05d5e"
+      },
+      HindIII: {
+        site: "AAGCTT",
+        end: "AGCT",
+        note: "付着端を作る。右端にも別の向きを与えられる。",
+        color: "#7e5bef"
+      },
+      BamHI: {
+        site: "GGATCC",
+        end: "GATC",
+        note: "別の付着端。今回は挿入DNAの両端と合わない。",
+        color: "#2c80d3"
+      },
+      SmaI: {
+        site: "CCCGGG",
+        end: "平滑",
+        note: "平滑末端を作る。付着端の相補性を使う今回の作戦には不向き。",
+        color: "#8a8f98"
+      }
+    };
+
+    const missions = [
+      {
+        title: "DNAを切り出す",
+        tab: "DNA切断",
+        desc: "目的遺伝子の両端を、相補的な付着端ができる制限酵素で切ります。"
+      },
+      {
+        title: "プラスミドを調整する",
+        tab: "プラスミド",
+        desc: "ampRを残し、lacZの中にあるMCSを開いて、挿入DNAを受け入れるベクターにします。"
+      },
+      {
+        title: "ライゲーション",
+        tab: "連結",
+        desc: "同じ種類の付着端どうしを合わせ、DNAリガーゼでリン酸ジエステル結合を完成させます。"
+      },
+      {
+        title: "ブルーホワイトセレクション",
+        tab: "選抜",
+        desc: "ampRでプラスミド保持細胞を選び、lacZの働きで組換え体の候補を見分けます。"
+      }
+    ];
+
+    const badges = [
+      ["cut", "制限酵素マスター", "EcoRIとHindIIIで目的遺伝子を切り出した"],
+      ["vector", "ベクター整備士", "ampRを守りながらlacZ内のMCSを開いた"],
+      ["ligase", "リガーゼ職人", "相補的な付着端を正しく連結した"],
+      ["selection", "白コロニー鑑定士", "選抜培地で組換え体候補を見つけた"],
+      ["scholar", "復習クエスト達成", "仕組みを言葉で説明できる"]
+    ];
+
+    const state = {
+      stage: 0,
+      unlocked: 0,
+      score: 0,
+      combo: 0,
+      selectedInsert: new Set(),
+      selectedPlasmid: new Set(),
+      ligationPairs: new Set(),
+      plate: "",
+      colonyPick: "",
+      quiz: {},
+      unlockedBadges: new Set(),
+      logs: ["ミッション開始。仮想ラボに入室しました。"]
+    };
+
+    const $ = (id) => document.getElementById(id);
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartAt = 0;
+
+    function init() {
+      setupViewport();
+      installTapFeedback();
+      buildHelix();
+      $("startBtn").addEventListener("click", () => {
+        $("opening").classList.add("hidden");
+        setTimeout(() => $("opening").style.display = "none", 650);
+        addLog("オープニング完了。目的遺伝子の探索を開始。");
+      });
+      renderTabs();
+      renderSide();
+      renderStage();
+      installTouchNavigation();
+    }
+
+    function setupViewport() {
+      const syncHeight = () => {
+        document.documentElement.style.setProperty("--app-height", `${window.innerHeight}px`);
+      };
+      syncHeight();
+      window.addEventListener("resize", syncHeight, { passive: true });
+      window.addEventListener("orientationchange", syncHeight, { passive: true });
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", syncHeight, { passive: true });
+      }
+    }
+
+    function installTapFeedback() {
+      const clearPressing = () => {
+        document.querySelectorAll(".is-pressing").forEach(btn => btn.classList.remove("is-pressing"));
+      };
+      document.addEventListener("pointerdown", (event) => {
+        const button = event.target.closest("button");
+        if (!button || button.disabled) return;
+        button.classList.add("is-pressing");
+      }, { passive: true });
+      document.addEventListener("pointerup", clearPressing, { passive: true });
+      document.addEventListener("pointercancel", clearPressing, { passive: true });
+      document.addEventListener("pointerleave", clearPressing, { passive: true });
+    }
+
+    function installTouchNavigation() {
+      const stageBody = $("stageBody");
+      if (!stageBody || stageBody.dataset.swipeReady) return;
+      stageBody.dataset.swipeReady = "true";
+      stageBody.addEventListener("touchstart", (event) => {
+        if (event.touches.length !== 1) return;
+        const touch = event.touches[0];
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+        touchStartAt = Date.now();
+      }, { passive: true });
+      stageBody.addEventListener("touchend", (event) => {
+        if (!event.changedTouches.length) return;
+        const touch = event.changedTouches[0];
+        const dx = touch.clientX - touchStartX;
+        const dy = touch.clientY - touchStartY;
+        const elapsed = Date.now() - touchStartAt;
+        if (elapsed > 900 || Math.abs(dx) < 86 || Math.abs(dx) < Math.abs(dy) * 1.35) return;
+        const nextStage = dx < 0 ? state.stage + 1 : state.stage - 1;
+        if (nextStage < 0 || nextStage > state.unlocked || nextStage >= missions.length) return;
+        state.stage = nextStage;
+        renderStage();
+        addLog(`Mission ${nextStage + 1}へ移動しました。`);
+      }, { passive: true });
+    }
+
+    function buildHelix() {
+      const helix = $("helix");
+      for (let i = 0; i < 12; i++) {
+        const rung = document.createElement("span");
+        rung.style.top = `${18 + i * 24}px`;
+        rung.style.setProperty("--rot", `${i % 2 ? 18 : -18}deg`);
+        rung.style.setProperty("--delay", `${i * 0.08}s`);
+        helix.appendChild(rung);
+      }
+    }
+
+    function renderTabs() {
+      $("tabs").innerHTML = missions.map((m, i) => {
+        const locked = i > state.unlocked;
+        return `<button class="tab-btn ${state.stage === i ? "active" : ""} ${locked ? "locked" : ""}" data-tab="${i}" ${locked ? "disabled" : ""}>
+          <strong>Mission ${i + 1}</strong><span>${m.tab}</span>
+        </button>`;
+      }).join("");
+      document.querySelectorAll("[data-tab]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.stage = Number(btn.dataset.tab);
+          renderTabs();
+          renderStage();
+        });
+      });
+    }
+
+    function renderSide() {
+      $("score").textContent = state.score;
+      $("combo").textContent = state.combo;
+      $("rank").textContent = getRank();
+      $("progressBar").style.width = `${Math.min(100, (state.unlockedBadges.size / badges.length) * 100)}%`;
+      $("badgeList").innerHTML = badges.map(([id, title, desc]) => {
+        const unlocked = state.unlockedBadges.has(id);
+        return `<div class="badge ${unlocked ? "unlocked" : ""}">
+          <div class="badge-icon">${unlocked ? "✓" : "?"}</div>
+          <div><strong>${title}</strong><span>${desc}</span></div>
+        </div>`;
+      }).join("");
+      $("logList").innerHTML = state.logs.slice(-8).map(log => `<li>${log}</li>`).join("");
+    }
+
+    function getRank() {
+      if (state.score >= 520) return "Professor";
+      if (state.score >= 390) return "Designer";
+      if (state.score >= 240) return "Researcher";
+      if (state.score >= 120) return "Trainee";
+      return "Rookie";
+    }
+
+    function renderStage() {
+      const m = missions[state.stage];
+      $("stageKicker").textContent = `Mission ${state.stage + 1}`;
+      $("stageTitle").textContent = m.title;
+      $("stageDesc").textContent = m.desc;
+      $("stageTag").textContent = state.stage < state.unlocked ? "CLEAR" : "ACTIVE";
+      const renderers = [renderCutStage, renderPlasmidStage, renderLigationStage, renderSelectionStage];
+      $("stageBody").innerHTML = renderers[state.stage]();
+      attachStageEvents();
+      renderTabs();
+      renderSide();
+    }
+
+    function enzymeCards(kind) {
+      const selected = kind === "insert" ? state.selectedInsert : state.selectedPlasmid;
+      return `<div class="enzyme-grid">${Object.entries(enzymes).map(([name, e]) => `
+        <button class="enzyme-card ${selected.has(name) ? "selected" : ""}" data-enzyme="${name}" data-kind="${kind}" type="button">
+          <span class="enzyme-name">${name}<span>${e.end}</span></span>
+          <span class="site">${e.site}</span>
+          <p>${e.note}</p>
+        </button>
+      `).join("")}</div>`;
+    }
+
+    function dnaVisual(cut) {
+      const seq = [
+        ["G", ""], ["A", "site-a"], ["A", "site-a"], ["T", "site-a"], ["T", "site-a"], ["C", "site-a"],
+        ["G", "target"], ["F", "target"], ["P", "target"], ["遺", "target"], ["伝", "target"], ["子", "target"],
+        ["A", "site-b"], ["A", "site-b"], ["G", "site-b"], ["C", "site-b"], ["T", "site-b"], ["T", "site-b"]
+      ];
+      return `<div class="dna-wrap">
+        <div class="dna-row" aria-label="目的遺伝子を含むDNA断片">
+          ${cut ? '<span class="cut-mark cut-left"></span><span class="cut-mark cut-right"></span>' : ""}
+          ${seq.map(([base, cls]) => `<span class="base ${cls}">${base}</span>`).join("")}
+        </div>
+        <div class="tiny">左端 EcoRI: GAATTC / 右端 HindIII: AAGCTT / 中央が目的遺伝子</div>
+        ${cut ? '<div><span class="insert-chip"><span class="end-tag">AATT</span> GFP遺伝子 <span class="end-tag">AGCT</span></span></div>' : ""}
+      </div>`;
+    }
+
+    function renderCutStage() {
+      const cut = state.unlockedBadges.has("cut");
+      return `<div class="lab-layout">
+        <div class="toolbox">
+          <p class="section-label">制限酵素を選ぶ</p>
+          ${enzymeCards("insert")}
+          <div class="actions">
+            <button class="primary-btn" id="cutCheck">DNAを切り出す</button>
+            <button class="secondary-btn" id="clearInsert">選択をリセット</button>
+          </div>
+          <div class="feedback" id="stageFeedback">ヒント: 目的遺伝子の両端にある認識配列と、できる付着端を見比べよう。</div>
+        </div>
+        <div class="workbench">
+          <p class="section-label">DNAマップ</p>
+          <div class="visual-stage">${dnaVisual(cut)}</div>
+        </div>
+      </div>`;
+    }
+
+    function renderPlasmidStage() {
+      const open = state.unlockedBadges.has("vector");
+      return `<div class="lab-layout">
+        <div class="workbench">
+          <p class="section-label">pQuestプラスミド</p>
+          <div class="visual-stage">
+            <div class="plasmid-area ${open ? "plasmid-open" : ""}">
+              <div class="plasmid-ring"></div>
+              <span class="gene-label label-ori">ori</span>
+              <span class="gene-label label-amp">ampR</span>
+              <span class="gene-label label-lacz">lacZ</span>
+              <span class="gene-label label-mcs">MCS</span>
+            </div>
+          </div>
+        </div>
+        <div class="toolbox">
+          <p class="section-label">ベクターを開く</p>
+          ${enzymeCards("plasmid")}
+          <div class="note-box"><strong>条件</strong><br>ampRは選抜に必要。lacZ内のMCSを切ると、挿入によりlacZが働かなくなる。</div>
+          <div class="actions">
+            <button class="primary-btn" id="plasmidCheck">プラスミドを調整</button>
+            <button class="secondary-btn" id="clearPlasmid">選択をリセット</button>
+          </div>
+          <div class="feedback" id="stageFeedback">ヒント: 挿入DNAと同じ付着端をプラスミド側にも作る。</div>
+        </div>
+      </div>`;
+    }
+
+    function renderLigationStage() {
+      const done = state.unlockedBadges.has("ligase");
+      return `<div class="lab-layout">
+        <div class="workbench">
+          <p class="section-label">付着端を合わせる</p>
+          <div class="visual-stage">
+            <div style="width:100%;">
+              <div>
+                <span class="insert-chip"><span class="end-tag">AATT</span> 挿入DNA <span class="end-tag">AGCT</span></span>
+                <span class="insert-chip"><span class="end-tag">TTAA</span> 開いたプラスミド <span class="end-tag">TCGA</span></span>
+              </div>
+              <div class="ligation-grid">
+                <button class="match-slot ${state.ligationPairs.has("left") ? "done" : ""}" data-pair="left">
+                  <strong>左端</strong>AATT と TTAA を合わせる
+                </button>
+                <button class="match-slot ${state.ligationPairs.has("right") ? "done" : ""}" data-pair="right">
+                  <strong>右端</strong>AGCT と TCGA を合わせる
+                </button>
+              </div>
+              <div class="ligase-beam ${done ? "beam-on" : ""}" id="ligaseBeam"></div>
+              <p class="tiny">同じ制限酵素でできた付着端どうしは相補的に水素結合し、リガーゼが骨格をつなぐ。</p>
+            </div>
+          </div>
+        </div>
+        <div class="toolbox">
+          <p class="section-label">DNAリガーゼ</p>
+          <div class="note-box"><strong>目標</strong><br>2種類の付着端を両方合わせると、向きがそろった組換えプラスミドになる。</div>
+          <div class="actions">
+            <button class="primary-btn" id="ligateCheck">リガーゼを作用させる</button>
+            <button class="secondary-btn" id="clearLigation">端の合わせ方を戻す</button>
+          </div>
+          <div class="feedback" id="stageFeedback">ヒント: AATTにはTTAA、AGCTにはTCGAが対応する。</div>
+        </div>
+      </div>`;
+    }
+
+    function renderSelectionStage() {
+      const selected = state.colonyPick;
+      return `<div class="lab-layout">
+        <div class="toolbox">
+          <p class="section-label">選抜プレートを選ぶ</p>
+          <div class="plate-options">
+            <button class="choice-btn ${state.plate === "lb" ? "selected" : ""}" data-plate="lb">LBのみ</button>
+            <button class="choice-btn ${state.plate === "amp" ? "selected" : ""}" data-plate="amp">LB + アンピシリン</button>
+            <button class="choice-btn ${state.plate === "bluewhite" ? "selected" : ""}" data-plate="bluewhite">LB + アンピシリン + X-gal + IPTG</button>
+          </div>
+          <div class="actions">
+            <button class="primary-btn" id="plateCheck">培地で判定</button>
+            <button class="secondary-btn" id="resetPlate">プレートを洗い流す</button>
+          </div>
+          <div class="feedback" id="stageFeedback">ヒント: ampRはプラスミド保持細胞の選抜、lacZは青白判定に関係する。</div>
+        </div>
+        <div class="workbench">
+          <p class="section-label">コロニー観察</p>
+          <div class="visual-stage">
+            <div class="plate-wrap">
+              <div class="petri" id="petri">${renderColonies(selected)}</div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="primary-btn" id="colonyCheck" ${state.plate !== "bluewhite" ? "disabled" : ""}>選んだコロニーを提出</button>
+          </div>
+        </div>
+      </div>
+      ${renderCertificate()}`;
+    }
+
+    function renderColonies(selected) {
+      if (state.plate !== "bluewhite") {
+        return `<span class="tiny" style="position:absolute;left:32%;top:46%;">プレート選択後に表示</span>`;
+      }
+      const colonies = [
+        ["white", "22%", "32%"], ["blue", "42%", "24%"], ["white", "62%", "36%"],
+        ["blue", "30%", "58%"], ["white", "54%", "62%"], ["blue", "70%", "55%"]
+      ];
+      return colonies.map((c, i) => `<button class="colony ${c[0]} ${selected === `${c[0]}-${i}` ? "selected" : ""}" data-colony="${c[0]}-${i}" style="left:${c[1]};top:${c[2]};" aria-label="${c[0] === "white" ? "白" : "青"}コロニー"></button>`).join("");
+    }
+
+    function renderCertificate() {
+      const clear = state.unlockedBadges.has("selection");
+      return `<div class="certificate ${clear ? "show" : ""}" id="certificate">
+        <p class="section-label">クリア特典: 復習クエスト</p>
+        <p>白コロニーは「ampRをもつプラスミドが入り、さらにlacZが挿入DNAで壊れた候補」です。最後に3問で理解を固めると、称号が上がります。</p>
+        <div class="quiz-grid">
+          ${quizItem("q1", "アンピシリン耐性遺伝子 ampR の主な役割は？", ["プラスミドをもつ細胞を選ぶ", "DNAを切断する", "青色を作る"], 0)}
+          ${quizItem("q2", "白コロニーが白く見える理由として近いものは？", ["lacZが挿入DNAで働きにくくなる", "ampRが切断される", "oriが増えすぎる"], 0)}
+          ${quizItem("q3", "EcoRIとHindIIIの2種類を使う利点は？", ["挿入DNAの向きをそろえやすい", "すべてのDNAが青くなる", "抗生物質が不要になる"], 0)}
+        </div>
+        <div class="actions">
+          <button class="primary-btn" id="quizCheck">復習クエストを採点</button>
+          <button class="secondary-btn" id="copySummary">学習ログを表示</button>
+        </div>
+        <div class="reward-cards" id="rewardCards">
+          <div class="reward-card"><strong>制限酵素</strong><span>特定の塩基配列を認識してDNAを切る。</span></div>
+          <div class="reward-card"><strong>DNAリガーゼ</strong><span>切れたDNAどうしの骨格を連結する。</span></div>
+          <div class="reward-card"><strong>青白選抜</strong><span>lacZの働きの有無を色で見分ける。</span></div>
+        </div>
+        <div class="feedback" id="quizFeedback">全問正解で最終バッジを獲得。</div>
+      </div>`;
+    }
+
+    function quizItem(id, question, options, correct) {
+      return `<div class="quiz-item">
+        <p>${question}</p>
+        <div class="quiz-options">
+          ${options.map((opt, i) => `<button class="choice-btn ${state.quiz[id] === i ? "selected" : ""}" data-quiz="${id}" data-answer="${i}" data-correct="${correct}">${opt}</button>`).join("")}
+        </div>
+      </div>`;
+    }
+
+    function attachStageEvents() {
+      document.querySelectorAll("[data-enzyme]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const set = btn.dataset.kind === "insert" ? state.selectedInsert : state.selectedPlasmid;
+          if (set.has(btn.dataset.enzyme)) set.delete(btn.dataset.enzyme);
+          else set.add(btn.dataset.enzyme);
+          renderStage();
+        });
+      });
+      const cutCheck = $("cutCheck");
+      if (cutCheck) cutCheck.addEventListener("click", checkCut);
+      const clearInsert = $("clearInsert");
+      if (clearInsert) clearInsert.addEventListener("click", () => { state.selectedInsert.clear(); renderStage(); });
+
+      const plasmidCheck = $("plasmidCheck");
+      if (plasmidCheck) plasmidCheck.addEventListener("click", checkPlasmid);
+      const clearPlasmid = $("clearPlasmid");
+      if (clearPlasmid) clearPlasmid.addEventListener("click", () => { state.selectedPlasmid.clear(); renderStage(); });
+
+      document.querySelectorAll("[data-pair]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.ligationPairs.add(btn.dataset.pair);
+          renderStage();
+        });
+      });
+      const ligateCheck = $("ligateCheck");
+      if (ligateCheck) ligateCheck.addEventListener("click", checkLigation);
+      const clearLigation = $("clearLigation");
+      if (clearLigation) clearLigation.addEventListener("click", () => { state.ligationPairs.clear(); renderStage(); });
+
+      document.querySelectorAll("[data-plate]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.plate = btn.dataset.plate;
+          state.colonyPick = "";
+          renderStage();
+        });
+      });
+      const plateCheck = $("plateCheck");
+      if (plateCheck) plateCheck.addEventListener("click", checkPlate);
+      const resetPlate = $("resetPlate");
+      if (resetPlate) resetPlate.addEventListener("click", () => { state.plate = ""; state.colonyPick = ""; renderStage(); });
+      document.querySelectorAll("[data-colony]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.colonyPick = btn.dataset.colony;
+          renderStage();
+        });
+      });
+      const colonyCheck = $("colonyCheck");
+      if (colonyCheck) colonyCheck.addEventListener("click", checkColony);
+
+      document.querySelectorAll("[data-quiz]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.quiz[btn.dataset.quiz] = Number(btn.dataset.answer);
+          renderStage();
+        });
+      });
+      const quizCheck = $("quizCheck");
+      if (quizCheck) quizCheck.addEventListener("click", checkQuiz);
+      const copySummary = $("copySummary");
+      if (copySummary) copySummary.addEventListener("click", showSummary);
+    }
+
+    function hasPair(set) {
+      return set.has("EcoRI") && set.has("HindIII") && set.size === 2;
+    }
+
+    function checkCut() {
+      if (hasPair(state.selectedInsert)) {
+        success("cut", 100, "目的遺伝子の両端にAATT端とAGCT端を作れました。方向性のある切り出しに成功。", 1);
+      } else if (state.selectedInsert.has("EcoRI") || state.selectedInsert.has("HindIII")) {
+        warn("片側だけは合っています。目的遺伝子をまるごと取り出すには、左右両端に対応する2種類を選びます。");
+      } else {
+        bad("今回は目的遺伝子の両端と合いません。認識配列 GAATTC と AAGCTT を探しましょう。");
+      }
+    }
+
+    function checkPlasmid() {
+      if (!state.unlockedBadges.has("cut")) {
+        warn("先に目的遺伝子を切り出すと、必要な付着端が判断しやすくなります。");
+        return;
+      }
+      if (hasPair(state.selectedPlasmid)) {
+        success("vector", 110, "ampRを残したまま、lacZ内のMCSをEcoRIとHindIIIで開きました。白コロニー判定の準備もできています。", 2);
+      } else if (state.selectedPlasmid.has("BamHI") || state.selectedPlasmid.has("SmaI")) {
+        bad("プラスミド側の端が挿入DNAと合いません。挿入DNAと同じ2種類の付着端を作るのがコツです。");
+      } else {
+        warn("MCSを開くには2か所の切断が必要です。EcoRIとHindIIIを組み合わせましょう。");
+      }
+    }
+
+    function checkLigation() {
+      if (!state.unlockedBadges.has("vector")) {
+        warn("プラスミドがまだ開いていません。先にベクター調整を終えると連結できます。");
+        return;
+      }
+      if (state.ligationPairs.has("left") && state.ligationPairs.has("right")) {
+        const beam = $("ligaseBeam");
+        if (beam) beam.classList.add("beam-on");
+        success("ligase", 120, "相補的な付着端がそろい、DNAリガーゼで組換えプラスミドが完成しました。", 3);
+      } else {
+        warn("片方の端だけでは環状プラスミドが完成しません。左右両方の付着端を合わせます。");
+      }
+    }
+
+    function checkPlate() {
+      if (!state.unlockedBadges.has("ligase")) {
+        warn("組換えプラスミドがまだ完成していません。ライゲーション後に選抜します。");
+        return;
+      }
+      if (state.plate === "bluewhite") {
+        feedback("good", "ampRでプラスミド保持細胞を選び、X-galとIPTGでlacZの働きを色として観察できます。白コロニーを探しましょう。");
+        addScore(40);
+      } else if (state.plate === "amp") {
+        warn("ampRの有無は見分けられますが、挿入DNAでlacZが壊れたかは色で判断できません。");
+      } else if (state.plate === "lb") {
+        bad("LBのみだとプラスミドをもたない細胞も増えるため、選抜になりません。");
+      } else {
+        warn("使うプレートを選んでから判定しましょう。");
+      }
+    }
+
+    function checkColony() {
+      if (!state.colonyPick) {
+        warn("観察したコロニーを1つ選んで提出します。");
+        return;
+      }
+      if (state.colonyPick.startsWith("white")) {
+        success("selection", 140, "白コロニーを選べました。lacZが挿入DNAで働かず、組換え体候補として追跡できます。", 3);
+        launchConfetti();
+      } else {
+        bad("青コロニーはlacZが働いている候補です。挿入DNAが入っていない可能性を考えます。");
+      }
+    }
+
+    function checkQuiz() {
+      const answers = [state.quiz.q1, state.quiz.q2, state.quiz.q3];
+      if (answers.every(a => a === 0)) {
+        success("scholar", 120, "復習クエスト全問正解。制限酵素、ampR、lacZの関係を説明できる状態です。", 3);
+        const qf = $("quizFeedback");
+        if (qf) {
+          qf.className = "feedback good";
+          qf.textContent = "完全クリア。称号がアップしました。";
+        }
+        launchConfetti();
+      } else {
+        const qf = $("quizFeedback");
+        if (qf) {
+          qf.className = "feedback warn";
+          qf.textContent = "惜しいです。ampRは選抜、lacZは青白判定、2種類の酵素は向きの制御に注目です。";
+        }
+      }
+    }
+
+    function showSummary() {
+      const qf = $("quizFeedback");
+      if (!qf) return;
+      qf.className = "feedback good";
+      qf.innerHTML = `学習ログ: 1. 制限酵素で目的遺伝子とプラスミドに対応する付着端を作る。 2. ampRを残し、lacZ内に挿入する。 3. リガーゼで連結する。 4. アンピシリンと青白判定で候補を選ぶ。`;
+    }
+
+    function success(badge, points, message, unlockStage) {
+      if (!state.unlockedBadges.has(badge)) {
+        state.unlockedBadges.add(badge);
+        addScore(points);
+        state.combo += 1;
+      } else {
+        addScore(15);
+      }
+      state.unlocked = Math.max(state.unlocked, unlockStage);
+      feedback("good", message);
+      addLog(message);
+      renderSide();
+      renderTabs();
+      setTimeout(() => {
+        if (state.stage < state.unlocked && badge !== "selection" && badge !== "scholar") {
+          state.stage += 1;
+          renderStage();
+        } else {
+          renderStage();
+        }
+      }, 780);
+    }
+
+    function warn(message) {
+      state.combo = 0;
+      feedback("warn", message);
+      addLog(`再考: ${message}`);
+      renderSide();
+    }
+
+    function bad(message) {
+      state.combo = 0;
+      addScore(-10);
+      feedback("bad", message);
+      addLog(`ミス: ${message}`);
+      renderSide();
+    }
+
+    function feedback(type, message) {
+      const box = $("stageFeedback");
+      if (!box) return;
+      box.className = `feedback ${type}`;
+      box.textContent = message;
+    }
+
+    function addScore(points) {
+      state.score = Math.max(0, state.score + points);
+    }
+
+    function addLog(message) {
+      state.logs.push(message);
+      if (state.logs.length > 16) state.logs.shift();
+      renderSide();
+    }
+
+    function launchConfetti() {
+      const layer = $("confettiLayer");
+      const colors = ["#00a7a5", "#f05d5e", "#f6b73c", "#35b66f", "#2c80d3", "#7e5bef"];
+      for (let i = 0; i < 70; i++) {
+        const piece = document.createElement("span");
+        piece.className = "confetti";
+        piece.style.left = `${Math.random() * 100}%`;
+        piece.style.background = colors[i % colors.length];
+        piece.style.animationDuration = `${1.2 + Math.random() * 1.5}s`;
+        piece.style.animationDelay = `${Math.random() * 0.22}s`;
+        piece.style.transform = `rotate(${Math.random() * 180}deg)`;
+        layer.appendChild(piece);
+        setTimeout(() => piece.remove(), 3200);
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
