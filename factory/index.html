@@ -1,1578 +1,528 @@
-<!doctype html>
-<html lang="ja">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="Gene Vector Quest">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="format-detection" content="telephone=no">
-  <title>Gene Vector Quest - 遺伝子組換えシミュレーション</title>
-  <style>
-    :root {
-      --ink: #17202a;
-      --muted: #607080;
-      --paper: #fbfaf6;
-      --panel: #ffffff;
-      --line: #d7dee8;
-      --teal: #00a7a5;
-      --teal-dark: #047f7d;
-      --coral: #f05d5e;
-      --amber: #f6b73c;
-      --leaf: #35b66f;
-      --blue: #2c80d3;
-      --violet: #7e5bef;
-      --shadow: 0 14px 34px rgba(24, 35, 52, 0.12);
-      --radius: 8px;
-    }
-
-    * { box-sizing: border-box; }
-    html {
-      scroll-behavior: smooth;
-      -webkit-text-size-adjust: 100%;
-    }
-    body {
-      margin: 0;
-      min-height: var(--app-height, 100dvh);
-      padding:
-        env(safe-area-inset-top)
-        env(safe-area-inset-right)
-        env(safe-area-inset-bottom)
-        env(safe-area-inset-left);
-      color: var(--ink);
-      background:
-        radial-gradient(circle at top left, rgba(0, 167, 165, 0.14), transparent 34rem),
-        linear-gradient(180deg, #eef9f7 0%, var(--paper) 34%, #f7f4eb 100%);
-      font-family: "Hiragino Sans", "Yu Gothic", "Meiryo", system-ui, sans-serif;
-      line-height: 1.65;
-      overscroll-behavior-y: none;
-    }
-
-    button, input, select { font: inherit; }
-    button {
-      min-height: 44px;
-      border: 0;
-      border-radius: var(--radius);
-      cursor: pointer;
-      touch-action: manipulation;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-      transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
-    }
-    button:focus-visible, .enzyme-card:focus-visible, .colony:focus-visible {
-      outline: 3px solid rgba(246, 183, 60, 0.75);
-      outline-offset: 3px;
-    }
-    @media (hover: hover) and (pointer: fine) {
-      button:hover { transform: translateY(-1px); }
-    }
-    button:active, button.is-pressing { transform: scale(0.985); }
-    button:disabled { cursor: not-allowed; opacity: 0.55; transform: none; }
-
-    .app-shell {
-      width: min(1180px, calc(100% - 28px));
-      margin: 0 auto;
-      padding: 18px 0 36px;
-    }
-
-    .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 14px;
-      align-items: center;
-      padding: 12px 0;
-      backdrop-filter: blur(12px);
-    }
-
-    .brand {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      min-width: 0;
-    }
-    .logo {
-      width: 46px;
-      height: 46px;
-      display: grid;
-      place-items: center;
-      color: white;
-      font-weight: 900;
-      border-radius: var(--radius);
-      background: conic-gradient(from 150deg, var(--teal), var(--blue), var(--leaf), var(--teal));
-      box-shadow: var(--shadow);
-    }
-    h1 {
-      margin: 0;
-      font-size: 25px;
-      line-height: 1.15;
-      letter-spacing: 0;
-    }
-    .subtitle {
-      margin: 2px 0 0;
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .hud {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-    .hud-pill {
-      min-width: 88px;
-      padding: 8px 10px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: rgba(255, 255, 255, 0.88);
-      box-shadow: 0 8px 20px rgba(24, 35, 52, 0.06);
-    }
-    .hud-pill span {
-      display: block;
-      color: var(--muted);
-      font-size: 11px;
-      line-height: 1.2;
-    }
-    .hud-pill strong {
-      display: block;
-      font-size: 18px;
-      line-height: 1.2;
-    }
-
-    .mission-tabs {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(120px, 1fr));
-      gap: 8px;
-      margin: 10px 0 16px;
-    }
-    .tab-btn {
-      min-height: 52px;
-      padding: 8px 10px;
-      color: var(--ink);
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.78);
-      text-align: left;
-    }
-    .tab-btn strong, .tab-btn span { display: block; }
-    .tab-btn strong { font-size: 13px; }
-    .tab-btn span { color: var(--muted); font-size: 12px; }
-    .tab-btn.active {
-      color: white;
-      border-color: transparent;
-      background: linear-gradient(135deg, var(--teal-dark), var(--blue));
-      box-shadow: var(--shadow);
-    }
-    .tab-btn.active span { color: rgba(255, 255, 255, 0.78); }
-    .tab-btn.locked { opacity: 0.48; }
-
-    .main-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 320px;
-      gap: 16px;
-      align-items: start;
-    }
-    .stage-panel, .side-panel {
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: rgba(255, 255, 255, 0.94);
-      box-shadow: var(--shadow);
-    }
-    .stage-panel {
-      overflow: hidden;
-      touch-action: pan-y;
-    }
-    .stage-head {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 16px;
-      align-items: start;
-      padding: 18px;
-      border-bottom: 1px solid var(--line);
-      background: linear-gradient(90deg, rgba(0, 167, 165, 0.13), rgba(246, 183, 60, 0.11));
-    }
-    .stage-kicker {
-      margin: 0 0 4px;
-      color: var(--teal-dark);
-      font-size: 13px;
-      font-weight: 800;
-    }
-    .stage-title {
-      margin: 0;
-      font-size: 24px;
-      line-height: 1.25;
-    }
-    .stage-desc {
-      margin: 8px 0 0;
-      color: var(--muted);
-      font-size: 14px;
-    }
-    .stage-tag {
-      min-width: 90px;
-      padding: 8px 10px;
-      text-align: center;
-      color: white;
-      border-radius: var(--radius);
-      background: var(--ink);
-      font-weight: 800;
-    }
-    .stage-body { padding: 18px; }
-
-    .lab-layout {
-      display: grid;
-      grid-template-columns: minmax(0, 1.05fr) minmax(250px, 0.95fr);
-      gap: 16px;
-      align-items: start;
-    }
-    .toolbox, .workbench, .note-box {
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: var(--panel);
-    }
-    .toolbox, .workbench { padding: 14px; }
-    .section-label {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      margin: 0 0 12px;
-      font-weight: 800;
-    }
-    .section-label::before {
-      content: "";
-      width: 10px;
-      height: 22px;
-      border-radius: 3px;
-      background: var(--teal);
-    }
-
-    .enzyme-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-    }
-    .enzyme-card {
-      min-height: 116px;
-      padding: 12px;
-      border: 2px solid var(--line);
-      border-radius: var(--radius);
-      background: #fff;
-      text-align: left;
-      color: var(--ink);
-    }
-    .enzyme-card.selected {
-      border-color: var(--teal);
-      background: #effffd;
-      box-shadow: 0 10px 24px rgba(0, 167, 165, 0.12);
-    }
-    .enzyme-card .enzyme-name {
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      font-weight: 900;
-      font-size: 16px;
-    }
-    .enzyme-card .site {
-      display: inline-block;
-      margin: 8px 0 6px;
-      padding: 4px 8px;
-      border-radius: 6px;
-      background: #eef2f7;
-      font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-      font-size: 14px;
-    }
-    .enzyme-card p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.45;
-    }
-
-    .visual-stage {
-      min-height: 315px;
-      display: grid;
-      place-items: center;
-      position: relative;
-      overflow: hidden;
-      padding: 12px;
-      border: 1px dashed #b9c7d7;
-      border-radius: var(--radius);
-      background:
-        linear-gradient(90deg, rgba(44, 128, 211, 0.08) 1px, transparent 1px),
-        linear-gradient(180deg, rgba(44, 128, 211, 0.08) 1px, transparent 1px),
-        #f9fcff;
-      background-size: 24px 24px;
-    }
-
-    .dna-wrap {
-      width: 100%;
-      display: grid;
-      gap: 16px;
-      align-content: center;
-    }
-    .dna-row {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 3px;
-      min-height: 42px;
-      padding: 8px 6px;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    .base {
-      width: 30px;
-      height: 30px;
-      display: grid;
-      place-items: center;
-      flex: 0 0 auto;
-      border-radius: 6px;
-      color: #0d1b2a;
-      background: #dfeeff;
-      border: 1px solid #b9d5f5;
-      font-weight: 900;
-      font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-    }
-    .base.target { background: #d9f8e8; border-color: #91d7b0; }
-    .base.site-a { background: #ffe7d9; border-color: #f2a06f; }
-    .base.site-b { background: #e9e3ff; border-color: #b9a9ff; }
-    .cut-mark {
-      position: absolute;
-      top: 2px;
-      width: 4px;
-      height: 88px;
-      border-radius: 4px;
-      background: var(--coral);
-      box-shadow: 0 0 0 4px rgba(240, 93, 94, 0.16);
-      transform: rotate(9deg);
-      animation: pulseCut 1.2s infinite;
-    }
-    .cut-left { left: 20%; }
-    .cut-right { right: 20%; }
-    @keyframes pulseCut {
-      0%, 100% { opacity: 0.65; transform: rotate(9deg) scaleY(0.96); }
-      50% { opacity: 1; transform: rotate(9deg) scaleY(1.08); }
-    }
-
-    .plasmid-area {
-      width: min(360px, 100%);
-      aspect-ratio: 1;
-      position: relative;
-      display: grid;
-      place-items: center;
-    }
-    .plasmid-ring {
-      width: 78%;
-      height: 78%;
-      border-radius: 50%;
-      border: 24px solid #d7e9f8;
-      position: relative;
-      box-shadow: inset 0 0 0 2px #8fc0e8, 0 12px 28px rgba(24, 35, 52, 0.1);
-    }
-    .plasmid-ring::before {
-      content: "";
-      position: absolute;
-      inset: -24px;
-      border-radius: 50%;
-      border: 24px solid transparent;
-      border-top-color: var(--leaf);
-      border-right-color: var(--leaf);
-      transform: rotate(18deg);
-    }
-    .plasmid-ring::after {
-      content: "";
-      position: absolute;
-      inset: -24px;
-      border-radius: 50%;
-      border: 24px solid transparent;
-      border-left-color: #8a8f98;
-      transform: rotate(-24deg);
-    }
-    .plasmid-open .plasmid-ring {
-      border-right-color: transparent;
-      border-bottom-color: transparent;
-      border-radius: 50% 50% 45% 50%;
-    }
-    .gene-label {
-      position: absolute;
-      padding: 5px 8px;
-      border-radius: 6px;
-      color: white;
-      font-size: 12px;
-      font-weight: 800;
-      box-shadow: 0 8px 16px rgba(24, 35, 52, 0.16);
-    }
-    .label-ori { top: 28%; left: 12%; background: #8a8f98; }
-    .label-amp { bottom: 24%; left: 16%; background: #5d6673; }
-    .label-lacz { top: 26%; right: 10%; background: var(--blue); }
-    .label-mcs { top: 48%; right: 7%; background: var(--coral); }
-    .insert-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin: 8px;
-      padding: 9px 12px;
-      border-radius: var(--radius);
-      color: #063a25;
-      background: #dff8ec;
-      border: 1px solid #92dcb6;
-      font-weight: 900;
-    }
-    .end-tag {
-      padding: 3px 7px;
-      border-radius: 5px;
-      color: white;
-      background: var(--teal-dark);
-      font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-      font-size: 12px;
-    }
-    .ligation-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      width: 100%;
-    }
-    .match-slot {
-      min-height: 92px;
-      padding: 10px;
-      border: 2px dashed #b9c7d7;
-      border-radius: var(--radius);
-      background: #fff;
-      text-align: center;
-    }
-    .match-slot.done {
-      border-color: var(--leaf);
-      background: #effbf4;
-    }
-    .match-slot strong { display: block; }
-    .ligase-beam {
-      width: min(420px, 94%);
-      height: 12px;
-      border-radius: 999px;
-      background: linear-gradient(90deg, var(--teal), var(--amber), var(--coral));
-      opacity: 0.45;
-      margin: 16px auto 0;
-      transform-origin: center;
-    }
-    .beam-on { animation: ligaseBeam 0.8s ease-in-out 2; }
-    @keyframes ligaseBeam {
-      0%, 100% { transform: scaleX(0.72); opacity: 0.4; }
-      50% { transform: scaleX(1); opacity: 1; }
-    }
-
-    .plate-wrap {
-      width: min(390px, 100%);
-      aspect-ratio: 1.1;
-      display: grid;
-      place-items: center;
-      position: relative;
-    }
-    .petri {
-      width: 92%;
-      height: 82%;
-      border-radius: 50%;
-      position: relative;
-      overflow: hidden;
-      border: 12px solid rgba(126, 176, 184, 0.42);
-      background:
-        radial-gradient(circle at 34% 30%, rgba(255,255,255,0.9), transparent 16%),
-        #f7e3b2;
-      box-shadow: inset 0 0 24px rgba(92, 64, 30, 0.12), 0 18px 34px rgba(24, 35, 52, 0.12);
-    }
-    .colony {
-      position: absolute;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      border: 2px solid rgba(24, 35, 52, 0.1);
-      box-shadow: 0 2px 6px rgba(24, 35, 52, 0.14);
-      display: grid;
-      place-items: center;
-      color: transparent;
-    }
-    .colony.white { background: #fffef7; }
-    .colony.blue { background: #3d8fe0; }
-    .colony.selected {
-      box-shadow: 0 0 0 5px rgba(53, 182, 111, 0.28), 0 2px 6px rgba(24, 35, 52, 0.14);
-      transform: scale(1.12);
-    }
-    .plate-options {
-      display: grid;
-      gap: 8px;
-    }
-    .choice-btn {
-      padding: 10px 12px;
-      border: 1px solid var(--line);
-      background: #fff;
-      color: var(--ink);
-      text-align: left;
-    }
-    .choice-btn.selected {
-      color: white;
-      border-color: transparent;
-      background: var(--teal-dark);
-      box-shadow: 0 10px 22px rgba(0, 167, 165, 0.18);
-    }
-
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 14px;
-    }
-    .primary-btn, .secondary-btn, .danger-btn {
-      min-height: 48px;
-      padding: 10px 14px;
-      font-weight: 900;
-    }
-    .primary-btn {
-      color: white;
-      background: linear-gradient(135deg, var(--teal-dark), var(--blue));
-      box-shadow: 0 10px 22px rgba(0, 127, 125, 0.22);
-    }
-    .secondary-btn {
-      color: var(--ink);
-      border: 1px solid var(--line);
-      background: #fff;
-    }
-    .danger-btn {
-      color: white;
-      background: var(--coral);
-    }
-
-    .feedback {
-      min-height: 52px;
-      margin-top: 12px;
-      padding: 10px 12px;
-      border-left: 5px solid var(--line);
-      border-radius: 0 var(--radius) var(--radius) 0;
-      background: #f7f9fb;
-      color: var(--muted);
-    }
-    .feedback.good {
-      border-left-color: var(--leaf);
-      background: #effbf4;
-      color: #1e6b43;
-    }
-    .feedback.warn {
-      border-left-color: var(--amber);
-      background: #fff8e6;
-      color: #7b5512;
-    }
-    .feedback.bad {
-      border-left-color: var(--coral);
-      background: #fff1f1;
-      color: #9d3030;
-    }
-
-    .side-panel { padding: 14px; }
-    .progress-track {
-      height: 12px;
-      overflow: hidden;
-      border-radius: 999px;
-      background: #e7edf4;
-    }
-    .progress-bar {
-      width: 0%;
-      height: 100%;
-      border-radius: inherit;
-      background: linear-gradient(90deg, var(--teal), var(--amber), var(--leaf));
-      transition: width 0.35s ease;
-    }
-    .badge-list {
-      display: grid;
-      gap: 8px;
-      margin-top: 12px;
-    }
-    .badge {
-      display: grid;
-      grid-template-columns: 34px 1fr;
-      gap: 9px;
-      align-items: center;
-      padding: 9px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: #fff;
-    }
-    .badge-icon {
-      width: 34px;
-      height: 34px;
-      display: grid;
-      place-items: center;
-      color: white;
-      border-radius: 50%;
-      background: #aab5c2;
-      font-weight: 900;
-    }
-    .badge.unlocked .badge-icon { background: var(--amber); color: #342306; }
-    .badge strong { display: block; font-size: 13px; }
-    .badge span { display: block; color: var(--muted); font-size: 12px; line-height: 1.35; }
-    .note-box {
-      margin-top: 12px;
-      padding: 12px;
-      color: var(--muted);
-      background: #fbfcfe;
-      font-size: 13px;
-    }
-    .note-box strong { color: var(--ink); }
-    .log-list {
-      max-height: 190px;
-      overflow: auto;
-      -webkit-overflow-scrolling: touch;
-      padding: 0;
-      margin: 8px 0 0;
-      list-style: none;
-      display: grid;
-      gap: 7px;
-    }
-    .log-list li {
-      padding: 7px 8px;
-      border-radius: 6px;
-      background: #f1f5f9;
-      font-size: 12px;
-      color: #455466;
-    }
-
-    .quiz-grid {
-      display: grid;
-      gap: 12px;
-      margin-top: 14px;
-    }
-    .quiz-item {
-      padding: 12px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: #fff;
-    }
-    .quiz-item p { margin: 0 0 8px; font-weight: 800; }
-    .quiz-options {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 8px;
-    }
-
-    .certificate {
-      display: none;
-      margin-top: 16px;
-      padding: 16px;
-      border: 2px solid var(--amber);
-      border-radius: var(--radius);
-      background:
-        linear-gradient(135deg, rgba(246, 183, 60, 0.16), rgba(53, 182, 111, 0.12)),
-        #fffefa;
-    }
-    .certificate.show { display: block; }
-    .reward-cards {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-top: 12px;
-    }
-    .reward-card {
-      min-height: 96px;
-      padding: 12px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: #fff;
-    }
-    .reward-card strong { display: block; margin-bottom: 4px; }
-    .reward-card span { color: var(--muted); font-size: 13px; }
-
-    .opening {
-      position: fixed;
-      inset: 0;
-      z-index: 50;
-      display: grid;
-      place-items: center;
-      padding: 24px;
-      color: white;
-      background:
-        radial-gradient(circle at 24% 28%, rgba(0, 167, 165, 0.55), transparent 22rem),
-        radial-gradient(circle at 70% 68%, rgba(246, 183, 60, 0.42), transparent 18rem),
-        linear-gradient(135deg, #0d1b2a, #132f44 58%, #0a2630);
-      overflow: hidden;
-    }
-    .opening.hidden {
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.55s ease;
-    }
-    .opening-card {
-      width: min(880px, 100%);
-      display: grid;
-      grid-template-columns: 1fr 280px;
-      gap: 22px;
-      align-items: center;
-    }
-    .opening h2 {
-      margin: 0;
-      font-size: 44px;
-      line-height: 1.12;
-      letter-spacing: 0;
-    }
-    .opening p {
-      color: rgba(255, 255, 255, 0.78);
-      font-size: 16px;
-    }
-    .opening .primary-btn {
-      background: linear-gradient(135deg, var(--amber), var(--leaf));
-      color: #13200d;
-    }
-    .helix {
-      position: relative;
-      height: 330px;
-    }
-    .helix span {
-      position: absolute;
-      left: 50%;
-      width: 180px;
-      height: 10px;
-      border-radius: 999px;
-      background: linear-gradient(90deg, var(--coral), #fff, var(--teal));
-      transform: translateX(-50%) rotate(var(--rot));
-      animation: floatHelix 2.8s ease-in-out infinite;
-      animation-delay: var(--delay);
-    }
-    .helix span::before, .helix span::after {
-      content: "";
-      position: absolute;
-      top: 50%;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      transform: translateY(-50%);
-      background: #fff;
-    }
-    .helix span::before { left: -4px; }
-    .helix span::after { right: -4px; }
-    @keyframes floatHelix {
-      0%, 100% { opacity: 0.62; transform: translateX(-50%) rotate(var(--rot)) scaleX(0.78); }
-      50% { opacity: 1; transform: translateX(-50%) rotate(calc(var(--rot) + 18deg)) scaleX(1); }
-    }
-
-    .confetti-layer {
-      position: fixed;
-      inset: 0;
-      z-index: 60;
-      pointer-events: none;
-      overflow: hidden;
-    }
-    .confetti {
-      position: absolute;
-      top: -12px;
-      width: 10px;
-      height: 16px;
-      background: var(--teal);
-      animation: confettiFall 1.8s linear forwards;
-    }
-    @keyframes confettiFall {
-      to { transform: translateY(110vh) rotate(720deg); opacity: 0.9; }
-    }
-
-    .tiny {
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    @media (pointer: coarse) {
-      body { font-size: 16px; }
-      .app-shell { width: min(100% - 32px, 1180px); }
-      .tab-btn {
-        min-height: 66px;
-        padding: 12px 14px;
-      }
-      .tab-btn strong { font-size: 15px; }
-      .tab-btn span { font-size: 13px; }
-      .stage-head { padding: 20px; }
-      .stage-body { padding: 20px; }
-      .toolbox, .workbench { padding: 16px; }
-      .enzyme-grid, .plate-options, .quiz-options, .actions {
-        gap: 12px;
-      }
-      .enzyme-card {
-        min-height: 132px;
-        padding: 16px;
-      }
-      .choice-btn {
-        min-height: 56px;
-        padding: 13px 15px;
-      }
-      .match-slot {
-        min-height: 112px;
-        padding: 14px;
-      }
-      .primary-btn, .secondary-btn, .danger-btn {
-        min-height: 56px;
-        padding: 13px 18px;
-      }
-      .visual-stage { min-height: 350px; }
-      .base {
-        width: 36px;
-        height: 36px;
-        font-size: 16px;
-      }
-      .colony {
-        width: 44px;
-        height: 44px;
-      }
-      .colony.selected {
-        box-shadow: 0 0 0 7px rgba(53, 182, 111, 0.28), 0 2px 6px rgba(24, 35, 52, 0.14);
-      }
-      .feedback {
-        min-height: 64px;
-        padding: 13px 15px;
-      }
-      .opening {
-        padding: max(28px, env(safe-area-inset-top)) max(28px, env(safe-area-inset-right)) max(28px, env(safe-area-inset-bottom)) max(28px, env(safe-area-inset-left));
-      }
-      .opening .primary-btn {
-        min-height: 60px;
-        padding-inline: 22px;
-      }
-    }
-
-    @media (min-width: 981px) and (max-width: 1180px) {
-      .app-shell { width: min(100% - 30px, 1060px); }
-      .main-grid { grid-template-columns: minmax(0, 1fr) 292px; }
-      .side-panel {
-        position: sticky;
-        top: 100px;
-        max-height: calc(100dvh - 118px);
-        overflow: auto;
-        -webkit-overflow-scrolling: touch;
-      }
-      .lab-layout {
-        grid-template-columns: 1fr;
-      }
-      .enzyme-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-
-    @media (max-width: 980px) {
-      .topbar, .main-grid, .lab-layout, .opening-card {
-        grid-template-columns: 1fr;
-      }
-      .hud { justify-content: flex-start; }
-      .mission-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .side-panel { order: -1; }
-      .opening h2 { font-size: 34px; }
-      .helix { height: 220px; }
-    }
-
-    @media (min-width: 700px) and (max-width: 980px) {
-      .mission-tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-      .badge-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .note-box { font-size: 14px; }
-      .visual-stage { min-height: 360px; }
-    }
-
-    @media (max-width: 620px) {
-      .app-shell { width: min(100% - 18px, 1180px); padding-top: 8px; }
-      .mission-tabs, .enzyme-grid, .ligation-grid, .quiz-options, .reward-cards {
-        grid-template-columns: 1fr;
-      }
-      .stage-head { grid-template-columns: 1fr; }
-      h1 { font-size: 21px; }
-      .stage-title { font-size: 21px; }
-      .base {
-        width: 26px;
-        height: 28px;
-        font-size: 13px;
-      }
-      .opening h2 { font-size: 29px; }
-    }
-  </style>
-</head>
-<body>
-  <div class="opening" id="opening">
-    <div class="opening-card">
-      <div>
-        <p class="stage-kicker">Virtual Biology Lab</p>
-        <h2>Gene Vector Quest<br>遺伝子組換えミッション</h2>
-        <p>制限酵素でDNAを切り、プラスミドを開き、リガーゼでつなぎ、選抜で「組換えが起きた証拠」を見つけます。これは高校生向けの概念シミュレーションです。</p>
-        <button class="primary-btn" id="startBtn">任務開始</button>
-      </div>
-      <div class="helix" aria-hidden="true" id="helix"></div>
-    </div>
-  </div>
-
-  <div class="confetti-layer" id="confettiLayer"></div>
-
-  <main class="app-shell">
-    <header class="topbar">
-      <div class="brand">
-        <div class="logo">GQ</div>
-        <div>
-          <h1>Gene Vector Quest</h1>
-          <p class="subtitle">遺伝子組換えを体験的に学ぶゲーミフィケーション教材</p>
-        </div>
-      </div>
-      <div class="hud" aria-label="スコア表示">
-        <div class="hud-pill"><span>Score</span><strong id="score">0</strong></div>
-        <div class="hud-pill"><span>Combo</span><strong id="combo">0</strong></div>
-        <div class="hud-pill"><span>Rank</span><strong id="rank">Rookie</strong></div>
-      </div>
-    </header>
-
-    <nav class="mission-tabs" id="tabs" aria-label="ミッション"></nav>
-
-    <section class="main-grid">
-      <article class="stage-panel">
-        <div class="stage-head">
-          <div>
-            <p class="stage-kicker" id="stageKicker">Mission 1</p>
-            <h2 class="stage-title" id="stageTitle">DNAを切り出す</h2>
-            <p class="stage-desc" id="stageDesc">目的遺伝子の両端を、相補的な付着端ができる制限酵素で切ります。</p>
-          </div>
-          <div class="stage-tag" id="stageTag">LOCK 解除</div>
-        </div>
-        <div class="stage-body" id="stageBody"></div>
-      </article>
-
-      <aside class="side-panel">
-        <p class="section-label">進行状況</p>
-        <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
-        <div class="badge-list" id="badgeList"></div>
-        <div class="note-box">
-          <strong>安全メモ</strong>
-          <p>この教材は仮想シミュレーションです。実際の実験条件、培養条件、操作量は扱わず、「なぜその操作を選ぶのか」を学ぶ設計にしています。</p>
-        </div>
-        <div class="note-box">
-          <strong>ラボログ</strong>
-          <ul class="log-list" id="logList"></ul>
-        </div>
-      </aside>
-    </section>
-  </main>
-
-  <script>
-    const enzymes = {
-      EcoRI: {
-        site: "GAATTC",
-        end: "AATT",
-        note: "付着端を作る。目的遺伝子の左端とMCSに対応。",
-        color: "#f05d5e"
-      },
-      HindIII: {
-        site: "AAGCTT",
-        end: "AGCT",
-        note: "付着端を作る。右端にも別の向きを与えられる。",
-        color: "#7e5bef"
-      },
-      BamHI: {
-        site: "GGATCC",
-        end: "GATC",
-        note: "別の付着端。今回は挿入DNAの両端と合わない。",
-        color: "#2c80d3"
-      },
-      SmaI: {
-        site: "CCCGGG",
-        end: "平滑",
-        note: "平滑末端を作る。付着端の相補性を使う今回の作戦には不向き。",
-        color: "#8a8f98"
-      }
-    };
-
-    const missions = [
-      {
-        title: "DNAを切り出す",
-        tab: "DNA切断",
-        desc: "目的遺伝子の両端を、相補的な付着端ができる制限酵素で切ります。"
-      },
-      {
-        title: "プラスミドを調整する",
-        tab: "プラスミド",
-        desc: "ampRを残し、lacZの中にあるMCSを開いて、挿入DNAを受け入れるベクターにします。"
-      },
-      {
-        title: "ライゲーション",
-        tab: "連結",
-        desc: "同じ種類の付着端どうしを合わせ、DNAリガーゼでリン酸ジエステル結合を完成させます。"
-      },
-      {
-        title: "ブルーホワイトセレクション",
-        tab: "選抜",
-        desc: "ampRでプラスミド保持細胞を選び、lacZの働きで組換え体の候補を見分けます。"
-      }
-    ];
-
-    const badges = [
-      ["cut", "制限酵素マスター", "EcoRIとHindIIIで目的遺伝子を切り出した"],
-      ["vector", "ベクター整備士", "ampRを守りながらlacZ内のMCSを開いた"],
-      ["ligase", "リガーゼ職人", "相補的な付着端を正しく連結した"],
-      ["selection", "白コロニー鑑定士", "選抜培地で組換え体候補を見つけた"],
-      ["scholar", "復習クエスト達成", "仕組みを言葉で説明できる"]
-    ];
-
-    const state = {
-      stage: 0,
-      unlocked: 0,
-      score: 0,
-      combo: 0,
-      selectedInsert: new Set(),
-      selectedPlasmid: new Set(),
-      ligationPairs: new Set(),
-      plate: "",
-      colonyPick: "",
-      quiz: {},
-      unlockedBadges: new Set(),
-      logs: ["ミッション開始。仮想ラボに入室しました。"]
-    };
-
-    const $ = (id) => document.getElementById(id);
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let touchStartAt = 0;
-
-    function init() {
-      setupViewport();
-      installTapFeedback();
-      buildHelix();
-      $("startBtn").addEventListener("click", () => {
-        $("opening").classList.add("hidden");
-        setTimeout(() => $("opening").style.display = "none", 650);
-        addLog("オープニング完了。目的遺伝子の探索を開始。");
-      });
-      renderTabs();
-      renderSide();
-      renderStage();
-      installTouchNavigation();
-    }
-
-    function setupViewport() {
-      const syncHeight = () => {
-        document.documentElement.style.setProperty("--app-height", `${window.innerHeight}px`);
-      };
-      syncHeight();
-      window.addEventListener("resize", syncHeight, { passive: true });
-      window.addEventListener("orientationchange", syncHeight, { passive: true });
-      if (window.visualViewport) {
-        window.visualViewport.addEventListener("resize", syncHeight, { passive: true });
-      }
-    }
-
-    function installTapFeedback() {
-      const clearPressing = () => {
-        document.querySelectorAll(".is-pressing").forEach(btn => btn.classList.remove("is-pressing"));
-      };
-      document.addEventListener("pointerdown", (event) => {
-        const button = event.target.closest("button");
-        if (!button || button.disabled) return;
-        button.classList.add("is-pressing");
-      }, { passive: true });
-      document.addEventListener("pointerup", clearPressing, { passive: true });
-      document.addEventListener("pointercancel", clearPressing, { passive: true });
-      document.addEventListener("pointerleave", clearPressing, { passive: true });
-    }
-
-    function installTouchNavigation() {
-      const stageBody = $("stageBody");
-      if (!stageBody || stageBody.dataset.swipeReady) return;
-      stageBody.dataset.swipeReady = "true";
-      stageBody.addEventListener("touchstart", (event) => {
-        if (event.touches.length !== 1) return;
-        const touch = event.touches[0];
-        touchStartX = touch.clientX;
-        touchStartY = touch.clientY;
-        touchStartAt = Date.now();
-      }, { passive: true });
-      stageBody.addEventListener("touchend", (event) => {
-        if (!event.changedTouches.length) return;
-        const touch = event.changedTouches[0];
-        const dx = touch.clientX - touchStartX;
-        const dy = touch.clientY - touchStartY;
-        const elapsed = Date.now() - touchStartAt;
-        if (elapsed > 900 || Math.abs(dx) < 86 || Math.abs(dx) < Math.abs(dy) * 1.35) return;
-        const nextStage = dx < 0 ? state.stage + 1 : state.stage - 1;
-        if (nextStage < 0 || nextStage > state.unlocked || nextStage >= missions.length) return;
-        state.stage = nextStage;
-        renderStage();
-        addLog(`Mission ${nextStage + 1}へ移動しました。`);
-      }, { passive: true });
-    }
-
-    function buildHelix() {
-      const helix = $("helix");
-      for (let i = 0; i < 12; i++) {
-        const rung = document.createElement("span");
-        rung.style.top = `${18 + i * 24}px`;
-        rung.style.setProperty("--rot", `${i % 2 ? 18 : -18}deg`);
-        rung.style.setProperty("--delay", `${i * 0.08}s`);
-        helix.appendChild(rung);
-      }
-    }
-
-    function renderTabs() {
-      $("tabs").innerHTML = missions.map((m, i) => {
-        const locked = i > state.unlocked;
-        return `<button class="tab-btn ${state.stage === i ? "active" : ""} ${locked ? "locked" : ""}" data-tab="${i}" ${locked ? "disabled" : ""}>
-          <strong>Mission ${i + 1}</strong><span>${m.tab}</span>
-        </button>`;
-      }).join("");
-      document.querySelectorAll("[data-tab]").forEach(btn => {
-        btn.addEventListener("click", () => {
-          state.stage = Number(btn.dataset.tab);
-          renderTabs();
-          renderStage();
-        });
-      });
-    }
-
-    function renderSide() {
-      $("score").textContent = state.score;
-      $("combo").textContent = state.combo;
-      $("rank").textContent = getRank();
-      $("progressBar").style.width = `${Math.min(100, (state.unlockedBadges.size / badges.length) * 100)}%`;
-      $("badgeList").innerHTML = badges.map(([id, title, desc]) => {
-        const unlocked = state.unlockedBadges.has(id);
-        return `<div class="badge ${unlocked ? "unlocked" : ""}">
-          <div class="badge-icon">${unlocked ? "✓" : "?"}</div>
-          <div><strong>${title}</strong><span>${desc}</span></div>
-        </div>`;
-      }).join("");
-      $("logList").innerHTML = state.logs.slice(-8).map(log => `<li>${log}</li>`).join("");
-    }
-
-    function getRank() {
-      if (state.score >= 520) return "Professor";
-      if (state.score >= 390) return "Designer";
-      if (state.score >= 240) return "Researcher";
-      if (state.score >= 120) return "Trainee";
-      return "Rookie";
-    }
-
-    function renderStage() {
-      const m = missions[state.stage];
-      $("stageKicker").textContent = `Mission ${state.stage + 1}`;
-      $("stageTitle").textContent = m.title;
-      $("stageDesc").textContent = m.desc;
-      $("stageTag").textContent = state.stage < state.unlocked ? "CLEAR" : "ACTIVE";
-      const renderers = [renderCutStage, renderPlasmidStage, renderLigationStage, renderSelectionStage];
-      $("stageBody").innerHTML = renderers[state.stage]();
-      attachStageEvents();
-      renderTabs();
-      renderSide();
-    }
-
-    function enzymeCards(kind) {
-      const selected = kind === "insert" ? state.selectedInsert : state.selectedPlasmid;
-      return `<div class="enzyme-grid">${Object.entries(enzymes).map(([name, e]) => `
-        <button class="enzyme-card ${selected.has(name) ? "selected" : ""}" data-enzyme="${name}" data-kind="${kind}" type="button">
-          <span class="enzyme-name">${name}<span>${e.end}</span></span>
-          <span class="site">${e.site}</span>
-          <p>${e.note}</p>
-        </button>
-      `).join("")}</div>`;
-    }
-
-    function dnaVisual(cut) {
-      const seq = [
-        ["G", ""], ["A", "site-a"], ["A", "site-a"], ["T", "site-a"], ["T", "site-a"], ["C", "site-a"],
-        ["G", "target"], ["F", "target"], ["P", "target"], ["遺", "target"], ["伝", "target"], ["子", "target"],
-        ["A", "site-b"], ["A", "site-b"], ["G", "site-b"], ["C", "site-b"], ["T", "site-b"], ["T", "site-b"]
-      ];
-      return `<div class="dna-wrap">
-        <div class="dna-row" aria-label="目的遺伝子を含むDNA断片">
-          ${cut ? '<span class="cut-mark cut-left"></span><span class="cut-mark cut-right"></span>' : ""}
-          ${seq.map(([base, cls]) => `<span class="base ${cls}">${base}</span>`).join("")}
-        </div>
-        <div class="tiny">左端 EcoRI: GAATTC / 右端 HindIII: AAGCTT / 中央が目的遺伝子</div>
-        ${cut ? '<div><span class="insert-chip"><span class="end-tag">AATT</span> GFP遺伝子 <span class="end-tag">AGCT</span></span></div>' : ""}
-      </div>`;
-    }
-
-    function renderCutStage() {
-      const cut = state.unlockedBadges.has("cut");
-      return `<div class="lab-layout">
-        <div class="toolbox">
-          <p class="section-label">制限酵素を選ぶ</p>
-          ${enzymeCards("insert")}
-          <div class="actions">
-            <button class="primary-btn" id="cutCheck">DNAを切り出す</button>
-            <button class="secondary-btn" id="clearInsert">選択をリセット</button>
-          </div>
-          <div class="feedback" id="stageFeedback">ヒント: 目的遺伝子の両端にある認識配列と、できる付着端を見比べよう。</div>
-        </div>
-        <div class="workbench">
-          <p class="section-label">DNAマップ</p>
-          <div class="visual-stage">${dnaVisual(cut)}</div>
-        </div>
-      </div>`;
-    }
-
-    function renderPlasmidStage() {
-      const open = state.unlockedBadges.has("vector");
-      return `<div class="lab-layout">
-        <div class="workbench">
-          <p class="section-label">pQuestプラスミド</p>
-          <div class="visual-stage">
-            <div class="plasmid-area ${open ? "plasmid-open" : ""}">
-              <div class="plasmid-ring"></div>
-              <span class="gene-label label-ori">ori</span>
-              <span class="gene-label label-amp">ampR</span>
-              <span class="gene-label label-lacz">lacZ</span>
-              <span class="gene-label label-mcs">MCS</span>
-            </div>
-          </div>
-        </div>
-        <div class="toolbox">
-          <p class="section-label">ベクターを開く</p>
-          ${enzymeCards("plasmid")}
-          <div class="note-box"><strong>条件</strong><br>ampRは選抜に必要。lacZ内のMCSを切ると、挿入によりlacZが働かなくなる。</div>
-          <div class="actions">
-            <button class="primary-btn" id="plasmidCheck">プラスミドを調整</button>
-            <button class="secondary-btn" id="clearPlasmid">選択をリセット</button>
-          </div>
-          <div class="feedback" id="stageFeedback">ヒント: 挿入DNAと同じ付着端をプラスミド側にも作る。</div>
-        </div>
-      </div>`;
-    }
-
-    function renderLigationStage() {
-      const done = state.unlockedBadges.has("ligase");
-      return `<div class="lab-layout">
-        <div class="workbench">
-          <p class="section-label">付着端を合わせる</p>
-          <div class="visual-stage">
-            <div style="width:100%;">
-              <div>
-                <span class="insert-chip"><span class="end-tag">AATT</span> 挿入DNA <span class="end-tag">AGCT</span></span>
-                <span class="insert-chip"><span class="end-tag">TTAA</span> 開いたプラスミド <span class="end-tag">TCGA</span></span>
-              </div>
-              <div class="ligation-grid">
-                <button class="match-slot ${state.ligationPairs.has("left") ? "done" : ""}" data-pair="left">
-                  <strong>左端</strong>AATT と TTAA を合わせる
-                </button>
-                <button class="match-slot ${state.ligationPairs.has("right") ? "done" : ""}" data-pair="right">
-                  <strong>右端</strong>AGCT と TCGA を合わせる
-                </button>
-              </div>
-              <div class="ligase-beam ${done ? "beam-on" : ""}" id="ligaseBeam"></div>
-              <p class="tiny">同じ制限酵素でできた付着端どうしは相補的に水素結合し、リガーゼが骨格をつなぐ。</p>
-            </div>
-          </div>
-        </div>
-        <div class="toolbox">
-          <p class="section-label">DNAリガーゼ</p>
-          <div class="note-box"><strong>目標</strong><br>2種類の付着端を両方合わせると、向きがそろった組換えプラスミドになる。</div>
-          <div class="actions">
-            <button class="primary-btn" id="ligateCheck">リガーゼを作用させる</button>
-            <button class="secondary-btn" id="clearLigation">端の合わせ方を戻す</button>
-          </div>
-          <div class="feedback" id="stageFeedback">ヒント: AATTにはTTAA、AGCTにはTCGAが対応する。</div>
-        </div>
-      </div>`;
-    }
-
-    function renderSelectionStage() {
-      const selected = state.colonyPick;
-      return `<div class="lab-layout">
-        <div class="toolbox">
-          <p class="section-label">選抜プレートを選ぶ</p>
-          <div class="plate-options">
-            <button class="choice-btn ${state.plate === "lb" ? "selected" : ""}" data-plate="lb">LBのみ</button>
-            <button class="choice-btn ${state.plate === "amp" ? "selected" : ""}" data-plate="amp">LB + アンピシリン</button>
-            <button class="choice-btn ${state.plate === "bluewhite" ? "selected" : ""}" data-plate="bluewhite">LB + アンピシリン + X-gal + IPTG</button>
-          </div>
-          <div class="actions">
-            <button class="primary-btn" id="plateCheck">培地で判定</button>
-            <button class="secondary-btn" id="resetPlate">プレートを洗い流す</button>
-          </div>
-          <div class="feedback" id="stageFeedback">ヒント: ampRはプラスミド保持細胞の選抜、lacZは青白判定に関係する。</div>
-        </div>
-        <div class="workbench">
-          <p class="section-label">コロニー観察</p>
-          <div class="visual-stage">
-            <div class="plate-wrap">
-              <div class="petri" id="petri">${renderColonies(selected)}</div>
-            </div>
-          </div>
-          <div class="actions">
-            <button class="primary-btn" id="colonyCheck" ${state.plate !== "bluewhite" ? "disabled" : ""}>選んだコロニーを提出</button>
-          </div>
-        </div>
-      </div>
-      ${renderCertificate()}`;
-    }
-
-    function renderColonies(selected) {
-      if (state.plate !== "bluewhite") {
-        return `<span class="tiny" style="position:absolute;left:32%;top:46%;">プレート選択後に表示</span>`;
-      }
-      const colonies = [
-        ["white", "22%", "32%"], ["blue", "42%", "24%"], ["white", "62%", "36%"],
-        ["blue", "30%", "58%"], ["white", "54%", "62%"], ["blue", "70%", "55%"]
-      ];
-      return colonies.map((c, i) => `<button class="colony ${c[0]} ${selected === `${c[0]}-${i}` ? "selected" : ""}" data-colony="${c[0]}-${i}" style="left:${c[1]};top:${c[2]};" aria-label="${c[0] === "white" ? "白" : "青"}コロニー"></button>`).join("");
-    }
-
-    function renderCertificate() {
-      const clear = state.unlockedBadges.has("selection");
-      return `<div class="certificate ${clear ? "show" : ""}" id="certificate">
-        <p class="section-label">クリア特典: 復習クエスト</p>
-        <p>白コロニーは「ampRをもつプラスミドが入り、さらにlacZが挿入DNAで壊れた候補」です。最後に3問で理解を固めると、称号が上がります。</p>
-        <div class="quiz-grid">
-          ${quizItem("q1", "アンピシリン耐性遺伝子 ampR の主な役割は？", ["プラスミドをもつ細胞を選ぶ", "DNAを切断する", "青色を作る"], 0)}
-          ${quizItem("q2", "白コロニーが白く見える理由として近いものは？", ["lacZが挿入DNAで働きにくくなる", "ampRが切断される", "oriが増えすぎる"], 0)}
-          ${quizItem("q3", "EcoRIとHindIIIの2種類を使う利点は？", ["挿入DNAの向きをそろえやすい", "すべてのDNAが青くなる", "抗生物質が不要になる"], 0)}
-        </div>
-        <div class="actions">
-          <button class="primary-btn" id="quizCheck">復習クエストを採点</button>
-          <button class="secondary-btn" id="copySummary">学習ログを表示</button>
-        </div>
-        <div class="reward-cards" id="rewardCards">
-          <div class="reward-card"><strong>制限酵素</strong><span>特定の塩基配列を認識してDNAを切る。</span></div>
-          <div class="reward-card"><strong>DNAリガーゼ</strong><span>切れたDNAどうしの骨格を連結する。</span></div>
-          <div class="reward-card"><strong>青白選抜</strong><span>lacZの働きの有無を色で見分ける。</span></div>
-        </div>
-        <div class="feedback" id="quizFeedback">全問正解で最終バッジを獲得。</div>
-      </div>`;
-    }
-
-    function quizItem(id, question, options, correct) {
-      return `<div class="quiz-item">
-        <p>${question}</p>
-        <div class="quiz-options">
-          ${options.map((opt, i) => `<button class="choice-btn ${state.quiz[id] === i ? "selected" : ""}" data-quiz="${id}" data-answer="${i}" data-correct="${correct}">${opt}</button>`).join("")}
-        </div>
-      </div>`;
-    }
-
-    function attachStageEvents() {
-      document.querySelectorAll("[data-enzyme]").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const set = btn.dataset.kind === "insert" ? state.selectedInsert : state.selectedPlasmid;
-          if (set.has(btn.dataset.enzyme)) set.delete(btn.dataset.enzyme);
-          else set.add(btn.dataset.enzyme);
-          renderStage();
-        });
-      });
-      const cutCheck = $("cutCheck");
-      if (cutCheck) cutCheck.addEventListener("click", checkCut);
-      const clearInsert = $("clearInsert");
-      if (clearInsert) clearInsert.addEventListener("click", () => { state.selectedInsert.clear(); renderStage(); });
-
-      const plasmidCheck = $("plasmidCheck");
-      if (plasmidCheck) plasmidCheck.addEventListener("click", checkPlasmid);
-      const clearPlasmid = $("clearPlasmid");
-      if (clearPlasmid) clearPlasmid.addEventListener("click", () => { state.selectedPlasmid.clear(); renderStage(); });
-
-      document.querySelectorAll("[data-pair]").forEach(btn => {
-        btn.addEventListener("click", () => {
-          state.ligationPairs.add(btn.dataset.pair);
-          renderStage();
-        });
-      });
-      const ligateCheck = $("ligateCheck");
-      if (ligateCheck) ligateCheck.addEventListener("click", checkLigation);
-      const clearLigation = $("clearLigation");
-      if (clearLigation) clearLigation.addEventListener("click", () => { state.ligationPairs.clear(); renderStage(); });
-
-      document.querySelectorAll("[data-plate]").forEach(btn => {
-        btn.addEventListener("click", () => {
-          state.plate = btn.dataset.plate;
-          state.colonyPick = "";
-          renderStage();
-        });
-      });
-      const plateCheck = $("plateCheck");
-      if (plateCheck) plateCheck.addEventListener("click", checkPlate);
-      const resetPlate = $("resetPlate");
-      if (resetPlate) resetPlate.addEventListener("click", () => { state.plate = ""; state.colonyPick = ""; renderStage(); });
-      document.querySelectorAll("[data-colony]").forEach(btn => {
-        btn.addEventListener("click", () => {
-          state.colonyPick = btn.dataset.colony;
-          renderStage();
-        });
-      });
-      const colonyCheck = $("colonyCheck");
-      if (colonyCheck) colonyCheck.addEventListener("click", checkColony);
-
-      document.querySelectorAll("[data-quiz]").forEach(btn => {
-        btn.addEventListener("click", () => {
-          state.quiz[btn.dataset.quiz] = Number(btn.dataset.answer);
-          renderStage();
-        });
-      });
-      const quizCheck = $("quizCheck");
-      if (quizCheck) quizCheck.addEventListener("click", checkQuiz);
-      const copySummary = $("copySummary");
-      if (copySummary) copySummary.addEventListener("click", showSummary);
-    }
-
-    function hasPair(set) {
-      return set.has("EcoRI") && set.has("HindIII") && set.size === 2;
-    }
-
-    function checkCut() {
-      if (hasPair(state.selectedInsert)) {
-        success("cut", 100, "目的遺伝子の両端にAATT端とAGCT端を作れました。方向性のある切り出しに成功。", 1);
-      } else if (state.selectedInsert.has("EcoRI") || state.selectedInsert.has("HindIII")) {
-        warn("片側だけは合っています。目的遺伝子をまるごと取り出すには、左右両端に対応する2種類を選びます。");
-      } else {
-        bad("今回は目的遺伝子の両端と合いません。認識配列 GAATTC と AAGCTT を探しましょう。");
-      }
-    }
-
-    function checkPlasmid() {
-      if (!state.unlockedBadges.has("cut")) {
-        warn("先に目的遺伝子を切り出すと、必要な付着端が判断しやすくなります。");
-        return;
-      }
-      if (hasPair(state.selectedPlasmid)) {
-        success("vector", 110, "ampRを残したまま、lacZ内のMCSをEcoRIとHindIIIで開きました。白コロニー判定の準備もできています。", 2);
-      } else if (state.selectedPlasmid.has("BamHI") || state.selectedPlasmid.has("SmaI")) {
-        bad("プラスミド側の端が挿入DNAと合いません。挿入DNAと同じ2種類の付着端を作るのがコツです。");
-      } else {
-        warn("MCSを開くには2か所の切断が必要です。EcoRIとHindIIIを組み合わせましょう。");
-      }
-    }
-
-    function checkLigation() {
-      if (!state.unlockedBadges.has("vector")) {
-        warn("プラスミドがまだ開いていません。先にベクター調整を終えると連結できます。");
-        return;
-      }
-      if (state.ligationPairs.has("left") && state.ligationPairs.has("right")) {
-        const beam = $("ligaseBeam");
-        if (beam) beam.classList.add("beam-on");
-        success("ligase", 120, "相補的な付着端がそろい、DNAリガーゼで組換えプラスミドが完成しました。", 3);
-      } else {
-        warn("片方の端だけでは環状プラスミドが完成しません。左右両方の付着端を合わせます。");
-      }
-    }
-
-    function checkPlate() {
-      if (!state.unlockedBadges.has("ligase")) {
-        warn("組換えプラスミドがまだ完成していません。ライゲーション後に選抜します。");
-        return;
-      }
-      if (state.plate === "bluewhite") {
-        feedback("good", "ampRでプラスミド保持細胞を選び、X-galとIPTGでlacZの働きを色として観察できます。白コロニーを探しましょう。");
-        addScore(40);
-      } else if (state.plate === "amp") {
-        warn("ampRの有無は見分けられますが、挿入DNAでlacZが壊れたかは色で判断できません。");
-      } else if (state.plate === "lb") {
-        bad("LBのみだとプラスミドをもたない細胞も増えるため、選抜になりません。");
-      } else {
-        warn("使うプレートを選んでから判定しましょう。");
-      }
-    }
-
-    function checkColony() {
-      if (!state.colonyPick) {
-        warn("観察したコロニーを1つ選んで提出します。");
-        return;
-      }
-      if (state.colonyPick.startsWith("white")) {
-        success("selection", 140, "白コロニーを選べました。lacZが挿入DNAで働かず、組換え体候補として追跡できます。", 3);
-        launchConfetti();
-      } else {
-        bad("青コロニーはlacZが働いている候補です。挿入DNAが入っていない可能性を考えます。");
-      }
-    }
-
-    function checkQuiz() {
-      const answers = [state.quiz.q1, state.quiz.q2, state.quiz.q3];
-      if (answers.every(a => a === 0)) {
-        success("scholar", 120, "復習クエスト全問正解。制限酵素、ampR、lacZの関係を説明できる状態です。", 3);
-        const qf = $("quizFeedback");
-        if (qf) {
-          qf.className = "feedback good";
-          qf.textContent = "完全クリア。称号がアップしました。";
-        }
-        launchConfetti();
-      } else {
-        const qf = $("quizFeedback");
-        if (qf) {
-          qf.className = "feedback warn";
-          qf.textContent = "惜しいです。ampRは選抜、lacZは青白判定、2種類の酵素は向きの制御に注目です。";
-        }
-      }
-    }
-
-    function showSummary() {
-      const qf = $("quizFeedback");
-      if (!qf) return;
-      qf.className = "feedback good";
-      qf.innerHTML = `学習ログ: 1. 制限酵素で目的遺伝子とプラスミドに対応する付着端を作る。 2. ampRを残し、lacZ内に挿入する。 3. リガーゼで連結する。 4. アンピシリンと青白判定で候補を選ぶ。`;
-    }
-
-    function success(badge, points, message, unlockStage) {
-      if (!state.unlockedBadges.has(badge)) {
-        state.unlockedBadges.add(badge);
-        addScore(points);
-        state.combo += 1;
-      } else {
-        addScore(15);
-      }
-      state.unlocked = Math.max(state.unlocked, unlockStage);
-      feedback("good", message);
-      addLog(message);
-      renderSide();
-      renderTabs();
-      setTimeout(() => {
-        if (state.stage < state.unlocked && badge !== "selection" && badge !== "scholar") {
-          state.stage += 1;
-          renderStage();
-        } else {
-          renderStage();
-        }
-      }, 780);
-    }
-
-    function warn(message) {
-      state.combo = 0;
-      feedback("warn", message);
-      addLog(`再考: ${message}`);
-      renderSide();
-    }
-
-    function bad(message) {
-      state.combo = 0;
-      addScore(-10);
-      feedback("bad", message);
-      addLog(`ミス: ${message}`);
-      renderSide();
-    }
-
-    function feedback(type, message) {
-      const box = $("stageFeedback");
-      if (!box) return;
-      box.className = `feedback ${type}`;
-      box.textContent = message;
-    }
-
-    function addScore(points) {
-      state.score = Math.max(0, state.score + points);
-    }
-
-    function addLog(message) {
-      state.logs.push(message);
-      if (state.logs.length > 16) state.logs.shift();
-      renderSide();
-    }
-
-    function launchConfetti() {
-      const layer = $("confettiLayer");
-      const colors = ["#00a7a5", "#f05d5e", "#f6b73c", "#35b66f", "#2c80d3", "#7e5bef"];
-      for (let i = 0; i < 70; i++) {
-        const piece = document.createElement("span");
-        piece.className = "confetti";
-        piece.style.left = `${Math.random() * 100}%`;
-        piece.style.background = colors[i % colors.length];
-        piece.style.animationDuration = `${1.2 + Math.random() * 1.5}s`;
-        piece.style.animationDelay = `${Math.random() * 0.22}s`;
-        piece.style.transform = `rotate(${Math.random() * 180}deg)`;
-        layer.appendChild(piece);
-        setTimeout(() => piece.remove(), 3200);
-      }
-    }
-
-    init();
-  </script>
-</body>
-</html>
+<!DOCTYPE html><html lang="ja"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Gene Factory V2 - インスリン工場をつくれ！</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--bg:#0a0e1a;--bg2:#111827;--cyan:#00e5ff;--green:#76ff03;--magenta:#e040fb;--red:#ff1744;--gold:#ffd600;--blue:#448aff;--text:#e0e0e0;--text2:#9e9e9e;--glass:rgba(17,24,39,.85)}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;min-height:100vh;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+h1,h2,h3,.label{font-family:'Orbitron','Noto Sans JP',sans-serif}
+.screen{display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:20px;animation:fadeIn .6s}
+.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+@keyframes glow{0%,100%{text-shadow:0 0 10px var(--cyan),0 0 40px rgba(0,229,255,.3)}50%{text-shadow:0 0 20px var(--cyan),0 0 60px rgba(0,229,255,.5)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.btn{font-family:'Orbitron',sans-serif;padding:14px 36px;border:2px solid var(--cyan);background:transparent;color:var(--cyan);font-size:1rem;cursor:pointer;border-radius:10px;transition:all .2s;letter-spacing:2px;min-height:52px}
+.btn:active{transform:scale(.95);background:rgba(0,229,255,.2)}
+.btn.primary{background:linear-gradient(135deg,rgba(0,229,255,.2),rgba(118,255,3,.2));border-color:var(--green);color:var(--green)}
+.btn.danger{border-color:var(--red);color:var(--red)}
+.card{background:var(--glass);border:1px solid rgba(0,229,255,.2);border-radius:16px;padding:24px;backdrop-filter:blur(10px)}
+.badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:700;letter-spacing:1px}
+.badge.cyan{background:rgba(0,229,255,.15);color:var(--cyan);border:1px solid rgba(0,229,255,.3)}
+.badge.green{background:rgba(118,255,3,.15);color:var(--green);border:1px solid rgba(118,255,3,.3)}
+.badge.red{background:rgba(255,23,68,.15);color:var(--red);border:1px solid rgba(255,23,68,.3)}
+.badge.gold{background:rgba(255,214,0,.15);color:var(--gold);border:1px solid rgba(255,214,0,.3)}
+.badge.blue{background:rgba(68,138,255,.15);color:var(--blue);border:1px solid rgba(68,138,255,.3)}
+.badge.magenta{background:rgba(224,64,251,.15);color:var(--magenta);border:1px solid rgba(224,64,251,.3)}
+.progress-bar{width:100%;height:8px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden}
+.progress-bar .fill{height:100%;border-radius:4px;transition:width .5s ease;background:linear-gradient(90deg,var(--cyan),var(--green))}
+.score-bar{display:inline-block;padding:6px 16px;border-radius:20px;font-family:'Orbitron',sans-serif;font-size:.9rem;background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.3);color:var(--cyan)}
+.content{position:relative;z-index:1;width:100%;max-width:900px;margin:0 auto}
+.logo{font-size:clamp(2rem,5vw,3.5rem);font-weight:900;background:linear-gradient(135deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:glow 3s infinite;margin-bottom:8px}
+.tutorial-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);z-index:100;display:flex;align-items:center;justify-content:center;animation:fadeIn .4s;padding:20px}
+.tutorial-box{max-width:650px;padding:28px;border-radius:20px;background:var(--bg2);border:1px solid rgba(0,229,255,.3);text-align:center;max-height:90vh;overflow-y:auto}
+.tutorial-box h2{color:var(--cyan);margin-bottom:16px;font-size:1.2rem}
+.opt-card{background:var(--glass);border:2px solid rgba(255,255,255,.1);border-radius:12px;padding:16px;text-align:left;cursor:pointer;transition:all .3s;margin:8px 0}
+.opt-card:active{transform:scale(.97)}
+.opt-card.selected{border-color:var(--gold);box-shadow:0 0 20px rgba(255,214,0,.3)}
+.opt-card.correct{border-color:var(--green);box-shadow:0 0 20px rgba(118,255,3,.4)}
+.opt-card.wrong{border-color:var(--red);box-shadow:0 0 20px rgba(255,23,68,.4)}
+.opt-card b{display:block;font-size:.95rem;margin-bottom:4px}
+.opt-card span{font-size:.8rem;color:var(--text2);line-height:1.5}
+.opt-card code{background:rgba(0,229,255,.1);padding:2px 6px;border-radius:4px;font-size:.8rem;font-family:monospace}
+.dna-seq{font-family:monospace;font-size:1rem;letter-spacing:1px;padding:12px;background:rgba(0,0,0,.3);border-radius:8px;text-align:center;line-height:2;overflow-x:auto;word-break:break-all}
+.dna-seq .cut{color:var(--red);font-weight:700}.dna-seq .ins{color:var(--green);font-weight:700}.dna-seq .sticky{color:var(--gold);font-weight:700}.dna-seq .normal{color:var(--text2)}
+.timer-bar{font-family:'Orbitron',sans-serif;font-size:1.5rem;font-weight:900;text-align:center;margin:8px 0}
+.plate{width:180px;height:180px;border-radius:50%;border:8px solid rgba(132,184,194,.45);background:radial-gradient(circle at 38% 28%,rgba(255,255,255,.3),transparent 40%),#f6dfac;position:relative;box-shadow:inset 0 0 20px rgba(88,58,22,.13)}
+.colony{position:absolute;border-radius:50%;border:2px solid rgba(31,45,68,.12);box-shadow:0 3px 7px rgba(31,45,68,.12);cursor:pointer;transition:all .3s}
+.colony.white{background:#fffef5}.colony.blue{background:#3b9df2}
+.colony.selected{box-shadow:0 0 0 5px rgba(255,214,0,.4);transform:scale(1.15)}
+.review-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px 0;width:100%}
+.review-item{text-align:center;padding:16px;border-radius:12px;background:var(--glass);border:1px solid rgba(255,255,255,.1)}
+.review-item .rv-label{font-size:.7rem;color:var(--text2);margin-bottom:4px}
+.review-item .rv-val{font-family:'Orbitron',sans-serif;font-size:1.3rem;font-weight:700}
+.info-popup{background:var(--glass);border:1px solid rgba(0,229,255,.3);border-radius:12px;padding:16px;font-size:.85rem;line-height:1.7;margin-top:8px}
+.info-popup .title{color:var(--cyan);font-weight:700;margin-bottom:4px}
+.confetti-container{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:200;overflow:hidden}
+.confetti-piece{position:absolute;width:10px;height:18px;top:-20px;animation:confetti-fall 2.5s linear forwards}
+@keyframes confetti-fall{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
+#particles-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.plate-wrap{display:inline-block;text-align:center;margin:8px}
+.plate-label{font-size:.75rem;color:var(--text2);margin-top:6px}
+@media(max-width:768px){.review-grid{grid-template-columns:1fr 1fr}}
+</style></head><body>
+<canvas id="particles-bg"></canvas>
+<!-- TITLE -->
+<div id="title" class="screen active">
+<div class="content" style="text-align:center">
+<div style="margin-bottom:20px;font-size:4rem;animation:float 3s infinite">🧬</div>
+<h1 class="logo">GENE FACTORY</h1>
+<p style="color:var(--text2);margin-bottom:8px;letter-spacing:3px;font-size:clamp(.8rem,2vw,1rem)">V2 — インスリン工場をつくれ！</p>
+<div class="card" style="text-align:left;max-width:650px;margin:0 auto 24px">
+<p style="line-height:2;font-size:.95rem">あなたは<span style="color:var(--cyan);font-weight:700">バイオテック研究所の新人研究員</span>。</p>
+<p style="line-height:2;font-size:.95rem;margin-top:8px">ミッション：<span style="color:var(--green);font-weight:700">ヒトのインスリン遺伝子</span>を大腸菌に導入し、<span style="color:var(--gold);font-weight:700">インスリン産生大腸菌</span>を完成させよ！</p>
+<div style="display:flex;gap:10px;margin:16px 0;flex-wrap:wrap;justify-content:center">
+<div style="text-align:center;padding:8px;border:1px solid rgba(0,229,255,.2);border-radius:10px;width:90px;background:rgba(0,229,255,.05)"><div style="font-size:1.3rem">✂️</div><div style="font-size:.7rem">DNA切断</div></div>
+<div style="text-align:center;padding:8px;border:1px solid rgba(0,229,255,.2);border-radius:10px;width:90px;background:rgba(0,229,255,.05)"><div style="font-size:1.3rem">🔄</div><div style="font-size:.7rem">プラスミド</div></div>
+<div style="text-align:center;padding:8px;border:1px solid rgba(0,229,255,.2);border-radius:10px;width:90px;background:rgba(0,229,255,.05)"><div style="font-size:1.3rem">🔗</div><div style="font-size:.7rem">ライゲーション</div></div>
+<div style="text-align:center;padding:8px;border:1px solid rgba(0,229,255,.2);border-radius:10px;width:90px;background:rgba(0,229,255,.05)"><div style="font-size:1.3rem">🌡️</div><div style="font-size:.7rem">形質転換</div></div>
+<div style="text-align:center;padding:8px;border:1px solid rgba(0,229,255,.2);border-radius:10px;width:90px;background:rgba(0,229,255,.05)"><div style="font-size:1.3rem">🔥</div><div style="font-size:.7rem">培養</div></div>
+<div style="text-align:center;padding:8px;border:1px solid rgba(0,229,255,.2);border-radius:10px;width:90px;background:rgba(0,229,255,.05)"><div style="font-size:1.3rem">🧫</div><div style="font-size:.7rem">コロニー選択</div></div>
+</div></div>
+<button class="btn primary" onclick="startGame()">▶ 研究開始</button>
+</div></div>
+<div id="phase1" class="screen"><div class="content" id="p1c"></div></div>
+<div id="phase2" class="screen"><div class="content" id="p2c"></div></div>
+<div id="phase3" class="screen"><div class="content" id="p3c"></div></div>
+<div id="phase4" class="screen"><div class="content" id="p4c"></div></div>
+<div id="phase5" class="screen"><div class="content" id="p5c"></div></div>
+<div id="phase6" class="screen"><div class="content" id="p6c"></div></div>
+<div id="results" class="screen"><div class="content" id="resc" style="text-align:center"></div></div>
+<div id="confetti-container" class="confetti-container"></div>
+<script>
+const G={score:0,phase:0,scores:[0,0,0,0,0,0]};
+const PHASES=[{name:'DNA切断',badge:'cyan',icon:'✂️'},{name:'プラスミド選択',badge:'green',icon:'🔄'},{name:'ライゲーション',badge:'gold',icon:'🔗'},{name:'形質転換',badge:'red',icon:'🌡️'},{name:'培養',badge:'magenta',icon:'🔥'},{name:'コロニー選択',badge:'blue',icon:'🧫'}];
+const audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+function playSound(t){audioCtx.resume();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);
+if(t==='success'){o.type='sine';o.frequency.setValueAtTime(523,audioCtx.currentTime);o.frequency.setValueAtTime(659,audioCtx.currentTime+.1);o.frequency.setValueAtTime(784,audioCtx.currentTime+.2);g.gain.setValueAtTime(.15,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.01,audioCtx.currentTime+.5);o.start();o.stop(audioCtx.currentTime+.5);}
+else if(t==='fail'){o.type='sawtooth';o.frequency.setValueAtTime(200,audioCtx.currentTime);o.frequency.linearRampToValueAtTime(100,audioCtx.currentTime+.5);g.gain.setValueAtTime(.12,audioCtx.currentTime);g.gain.linearRampToValueAtTime(0,audioCtx.currentTime+.5);o.start();o.stop(audioCtx.currentTime+.5);}
+else if(t==='click'){o.type='sine';o.frequency.setValueAtTime(1000,audioCtx.currentTime);g.gain.setValueAtTime(.08,audioCtx.currentTime);g.gain.linearRampToValueAtTime(0,audioCtx.currentTime+.06);o.start();o.stop(audioCtx.currentTime+.06);}
+else if(t==='levelup'){o.type='sine';o.frequency.setValueAtTime(440,audioCtx.currentTime);o.frequency.setValueAtTime(554,audioCtx.currentTime+.12);o.frequency.setValueAtTime(659,audioCtx.currentTime+.24);o.frequency.setValueAtTime(880,audioCtx.currentTime+.36);g.gain.setValueAtTime(.15,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.01,audioCtx.currentTime+.7);o.start();o.stop(audioCtx.currentTime+.7);}
+else{o.type='sine';o.frequency.setValueAtTime(523,audioCtx.currentTime);g.gain.setValueAtTime(.12,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.01,audioCtx.currentTime+.4);o.start();o.stop(audioCtx.currentTime+.4);}}
+const pCV=document.getElementById('particles-bg'),pCx=pCV.getContext('2d');let pts=[];
+function initP(){pCV.width=innerWidth;pCV.height=innerHeight;pts=[];for(let i=0;i<30;i++)pts.push({x:Math.random()*pCV.width,y:Math.random()*pCV.height,r:Math.random()*2+.5,dx:(Math.random()-.5)*.3,dy:(Math.random()-.5)*.3,a:Math.random()*.3+.1});}
+function drawP(){pCx.clearRect(0,0,pCV.width,pCV.height);pts.forEach(p=>{pCx.beginPath();pCx.arc(p.x,p.y,p.r,0,Math.PI*2);pCx.fillStyle=`rgba(118,255,3,${p.a})`;pCx.fill();p.x+=p.dx;p.y+=p.dy;if(p.x<0||p.x>pCV.width)p.dx*=-1;if(p.y<0||p.y>pCV.height)p.dy*=-1;});requestAnimationFrame(drawP);}
+addEventListener('resize',initP);initP();drawP();
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');scrollTo(0,0);}
+function showTut(title,steps,cb){const ov=document.createElement('div');ov.className='tutorial-overlay';ov.id='tut';let h='<div class="tutorial-box"><h2>'+title+'</h2>';steps.forEach((s,i)=>{h+='<div style="display:flex;align-items:flex-start;gap:10px;margin:6px 0;padding:8px;border-radius:8px;background:rgba(0,229,255,.05)"><div style="font-family:Orbitron;color:var(--cyan);font-weight:700;min-width:20px">'+(i+1)+'</div><div style="font-size:.85rem;line-height:1.6;text-align:left">'+s+'</div></div>';});h+='<button class="btn primary" style="margin-top:14px" onclick="document.getElementById(\'tut\').remove();'+(cb||'')+'">OK！始めよう</button></div>';ov.innerHTML=h;document.body.appendChild(ov);}
+function phaseHdr(idx){const p=PHASES[idx];return '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px"><div><span class="badge '+p.badge+'">PHASE '+(idx+1)+'</span> <span style="margin-left:8px;font-weight:700">'+p.name+'</span></div><div class="score-bar">SCORE: <span id="ps">'+G.scores[idx]+'</span> | 合計: '+G.score+'</div></div><div class="progress-bar" style="margin-bottom:12px"><div class="fill" style="width:'+(idx/6*100)+'%"></div></div>';}
+function launchConfetti(){const c=document.getElementById('confetti-container');const cols=['#ff1744','#00e5ff','#76ff03','#ffd600','#e040fb','#448aff'];for(let i=0;i<60;i++){const p=document.createElement('div');p.className='confetti-piece';p.style.left=Math.random()*100+'%';p.style.background=cols[i%cols.length];p.style.animationDuration=(1.5+Math.random()*1.5)+'s';p.style.animationDelay=(Math.random()*.3)+'s';c.appendChild(p);setTimeout(()=>p.remove(),3500);}}
+
+// ===== PHASE 1: DNA CUTTING (timed) =====
+let p1sel=new Set(),p1timer=60,p1interval=null;
+const ENZYMES=[
+{id:'EcoRI',site:'GAATTC',end:'5\'-AATT-3\' 突出'},
+{id:'BamHI',site:'GGATCC',end:'5\'-GATC-3\' 突出'},
+{id:'HindIII',site:'AAGCTT',end:'5\'-AGCT-3\' 突出'},
+{id:'SmaI',site:'CCCGGG',end:'平滑末端'},
+{id:'PstI',site:'CTGCAG',end:'3\'-ACGT-5\' 突出'},
+{id:'NotI',site:'GCGGCCGC',end:'5\'-GGCC-3\' 突出'}
+];
+function startGame(){showScreen('phase1');showTut('✂️ Phase 1: DNA切断',['ヒトDNAからインスリン遺伝子を<strong>制限酵素</strong>で切り出します。','DNA配列中の<strong>認識配列</strong>を探し、正しい制限酵素を<strong>2種類</strong>選んでください。','<strong style="color:var(--red)">制限時間あり！</strong>速いほど高得点。よく見て素早く判断しよう。'],'renderP1()');}
+function renderP1(){
+p1sel.clear();p1timer=60;
+const el=document.getElementById('p1c');
+let h=phaseHdr(0);
+h+='<div class="timer-bar" id="p1timer" style="color:var(--cyan)">⏱ 60秒</div>';
+h+='<div class="card" style="margin-bottom:12px"><h3 style="font-size:.85rem;color:var(--cyan);margin-bottom:8px">🧬 ヒトDNA — インスリン遺伝子領域</h3>';
+h+='<div class="dna-seq">';
+h+='<span class="normal">...ATCGGTAC</span>';
+h+='<span class="cut">GAATTC</span>';
+h+='<span class="normal">TACCG</span>';
+h+='<span class="ins">ATGTTCGTCAACCAACACTTGTGTGGCTCACACCTGGTGGAAGCTCTCTACCTAGTGTGCGGGGAACGAGGCTTCTTCTACACACCCAAGACCCGCCGGGAGGCAGAGGACCTGCAGGTGGGGCAGGTGGAGCTGGGCGGGGGCCCTGGTGCAGGCAGCCTGCAGCCCTTGGCCCTGGAGGGGTCCCTGCAGAAGCGTGGCATTGTGGAACAATGCTGTACCAGCATCTGCTCCCTCTACCAGCTGGAGAACTACTGCAACTGA</span>';
+h+='<span class="normal">GCCTA</span>';
+h+='<span class="cut">AAGCTT</span>';
+h+='<span class="normal">GCATTGCGA...</span>';
+h+='</div>';
+h+='<p style="font-size:.75rem;color:var(--text2);margin-top:6px;text-align:center">緑: インスリン遺伝子配列 ｜ 赤: 制限酵素認識部位 ｜ 灰: ヒトDNA</p></div>';
+h+='<h3 style="font-size:.85rem;color:var(--text2);margin:12px 0 6px">制限酵素を2つ選択せよ</h3>';
+h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
+ENZYMES.forEach(e=>{
+h+='<div class="opt-card'+(p1sel.has(e.id)?' selected':'')+'" onclick="p1toggle(\''+e.id+'\')">';
+h+='<b>'+e.id+'</b><span>認識配列: <code>'+e.site+'</code><br>切断末端: '+e.end+'</span></div>';});
+h+='</div>';
+h+='<div style="text-align:center;margin-top:12px"><button class="btn primary" onclick="p1check()">✂️ DNAを切断！</button></div>';
+h+='<div id="p1fb" class="info-popup"><div class="title">💡 ヒント</div>DNA配列中に隠れている<strong style="color:var(--red)">赤い認識配列</strong>を探して、それに対応する酵素を選びましょう。</div>';
+el.innerHTML=h;
+if(p1interval)clearInterval(p1interval);
+p1interval=setInterval(()=>{p1timer--;const te=document.getElementById('p1timer');if(te){te.textContent='⏱ '+p1timer+'秒';if(p1timer<=10)te.style.color='var(--red)';if(p1timer<=0){clearInterval(p1interval);p1check();}}},1000);}
+
+function p1toggle(id){playSound('click');if(p1sel.has(id))p1sel.delete(id);else{if(p1sel.size>=2)return;p1sel.add(id);}
+document.querySelectorAll('#p1c .opt-card').forEach(c=>{const eid=c.querySelector('b').textContent;c.classList.toggle('selected',p1sel.has(eid));});}
+
+function p1check(){
+clearInterval(p1interval);
+const fb=document.getElementById('p1fb');
+if(p1sel.size!==2){fb.innerHTML='<div class="title" style="color:var(--red)">⚠️</div>2種類の制限酵素を選んでください。';playSound('fail');p1interval=setInterval(()=>{p1timer--;const te=document.getElementById('p1timer');if(te){te.textContent='⏱ '+p1timer+'秒';if(p1timer<=0){clearInterval(p1interval);p1check();}}},1000);return;}
+if(p1sel.has('EcoRI')&&p1sel.has('HindIII')){
+playSound('success');const bonus=Math.max(0,p1timer)*2;const pts=50+bonus;G.scores[0]=pts;G.score+=pts;
+fb.innerHTML='<div class="title" style="color:var(--green)">🎉 正解！ +'+(pts)+'点（タイムボーナス: +'+bonus+'）</div>EcoRI（GAATTC）で左端を、HindIII（AAGCTT）で右端を切断。異なる付着端により<strong>方向性のある挿入</strong>が可能に！<br><div class="dna-seq" style="margin-top:8px"><span class="sticky">AATT</span><span class="ins">C—インスリン遺伝子—A</span><span class="sticky">AGCT</span></div>';
+setTimeout(()=>{playSound('levelup');showScreen('phase2');renderP2();showTut('🔄 Phase 2: プラスミド選択',['インスリン遺伝子を大腸菌に運ぶ<strong>ベクター（プラスミド）</strong>を選びます。','4つの候補プラスミドのマップを見て、最適なものを選んでください。','<span style="color:var(--green)">ampR（アンピシリン耐性）</span>: アンピシリン入り培地でプラスミド保持菌を選択するためのマーカー','<span style="color:var(--magenta)">lacZ（β-ガラクトシダーゼ）</span>: 遺伝子が挿入されるとlacZが壊れ、<strong>白コロニー</strong>として見分けられる（青白選択）','プラスミドマップの<strong>制限酵素サイトの位置</strong>がカギ！']);},2000);
+}else if(p1sel.has('EcoRI')||p1sel.has('HindIII')){
+playSound('fail');G.score=Math.max(0,G.score-5);
+fb.innerHTML='<div class="title" style="color:var(--gold)">△ 片方は正解！</div>配列をもう一度よく見て、残りの認識部位を探してください。';p1interval=setInterval(()=>{p1timer--;const te=document.getElementById('p1timer');if(te){te.textContent='⏱ '+p1timer+'秒';if(p1timer<=0){clearInterval(p1interval);}}},1000);
+}else{playSound('fail');G.score=Math.max(0,G.score-10);fb.innerHTML='<div class="title" style="color:var(--red)">✗ 不正解</div>DNA配列中の赤い部分が認識配列です。GAATTCとAAGCTTに注目！';p1interval=setInterval(()=>{p1timer--;const te=document.getElementById('p1timer');if(te){te.textContent='⏱ '+p1timer+'秒';if(p1timer<=0){clearInterval(p1interval);}}},1000);}}
+</script>
+<script>
+// ===== PHASE 2: PLASMID SELECTION (fictional plasmids with detailed maps) =====
+let p2sel='';
+const PLASMIDS=[
+{id:'pGF-1',name:'pGF-1',correct:true,
+features:{ori:true,ampR:true,lacZ:true,ecoRI:'lacZ内',hindIII:'lacZ内'},
+desc:'EcoRI/HindIIIサイトがlacZ遺伝子内（MCS）にある。挿入されればlacZが破壊され青白選択可能。ampR健在。',
+why:'✅ 全条件クリア。MCS内の両サイトへの挿入でlacZが壊れ、白コロニーとして検出可能。'},
+{id:'pGF-2',name:'pGF-2',correct:false,
+features:{ori:true,ampR:true,lacZ:true,ecoRI:'lacZ外（ori付近）',hindIII:'lacZ外（ori付近）'},
+desc:'EcoRI/HindIIIサイトがlacZ遺伝子の外（ori付近）にある。',
+why:'❌ 挿入されてもlacZは壊れない → 青白選択で区別不可。全てのコロニーが青になってしまう。'},
+{id:'pGF-3',name:'pGF-3',correct:false,
+features:{ori:true,ampR:true,lacZ:true,ecoRI:'ampR遺伝子内',hindIII:'ampR遺伝子内'},
+desc:'EcoRI/HindIIIサイトがampR遺伝子内にある。',
+why:'❌ 挿入されるとampRが壊れる → アンピシリン培地で生存できない → 目的の菌も選択できない。'},
+{id:'pGF-4',name:'pGF-4',correct:false,
+features:{ori:true,ampR:false,lacZ:true,ecoRI:'lacZ内',hindIII:'なし'},
+desc:'HindIIIサイトがない。ampR遺伝子も欠損。',
+why:'❌ 片方の酵素サイトしかない → 方向性挿入不可。ampRなし → 選択マーカーがない。'}
+];
+
+function drawPlasmidSVG(p){
+const r=90,cx=130,cy=130;
+let svg='<svg width="260" height="260" viewBox="0 0 260 260" style="display:block;margin:0 auto">';
+// background circle
+svg+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="22"/>';
+// ori region (top, always present)
+svg+='<path d="M'+cx+' '+(cy-r)+' A'+r+' '+r+' 0 0 1 '+(cx+r*.7)+' '+(cy-r*.7)+'" fill="none" stroke="rgba(0,229,255,.5)" stroke-width="22"/>';
+svg+='<text x="'+(cx+15)+'" y="'+(cy-r-8)+'" fill="var(--cyan)" font-size="10" font-weight="700">ori</text>';
+// ampR region (right)
+if(p.features.ampR){
+svg+='<path d="M'+(cx+r*.7)+' '+(cy-r*.7)+' A'+r+' '+r+' 0 0 1 '+(cx+r)+' '+cy+'" fill="none" stroke="var(--green)" stroke-width="22"/>';
+svg+='<text x="'+(cx+r+5)+'" y="'+(cy-15)+'" fill="var(--green)" font-size="10" font-weight="700">ampR</text>';
+}else{
+svg+='<path d="M'+(cx+r*.7)+' '+(cy-r*.7)+' A'+r+' '+r+' 0 0 1 '+(cx+r)+' '+cy+'" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="22" stroke-dasharray="4"/>';
+svg+='<text x="'+(cx+r+5)+'" y="'+(cy-15)+'" fill="var(--red)" font-size="9" font-weight="700">ampR欠損</text>';
+}
+// lacZ region (bottom)
+svg+='<path d="M'+(cx+r)+' '+cy+' A'+r+' '+r+' 0 0 1 '+(cx-r*.7)+' '+(cy+r*.7)+'" fill="none" stroke="var(--magenta)" stroke-width="22"/>';
+svg+='<text x="'+(cx-5)+'" y="'+(cy+r+16)+'" fill="var(--magenta)" font-size="10" font-weight="700">lacZ</text>';
+// remaining arc
+svg+='<path d="M'+(cx-r*.7)+' '+(cy+r*.7)+' A'+r+' '+r+' 0 0 1 '+cx+' '+(cy-r)+'" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="22"/>';
+// enzyme sites markers
+function siteMarker(label,angle,color){
+const x=cx+(r+32)*Math.cos(angle),y=cy+(r+32)*Math.sin(angle);
+const mx=cx+r*Math.cos(angle),my=cy+r*Math.sin(angle);
+svg+='<circle cx="'+mx+'" cy="'+my+'" r="5" fill="'+color+'" stroke="#fff" stroke-width="1.5"/>';
+svg+='<text x="'+x+'" y="'+(y+4)+'" fill="'+color+'" font-size="8" font-weight="700" text-anchor="middle">'+label+'</text>';
+}
+// Position enzyme sites based on where they are
+const loc=p.features;
+if(loc.ecoRI==='lacZ内'){siteMarker('EcoRI',Math.PI*.6,'var(--gold)');} 
+else if(loc.ecoRI==='lacZ外（ori付近）'){siteMarker('EcoRI',-Math.PI*.35,'var(--gold)');}
+else if(loc.ecoRI==='ampR遺伝子内'){siteMarker('EcoRI',-Math.PI*.15,'var(--gold)');}
+if(loc.hindIII==='lacZ内'){siteMarker('HindIII',Math.PI*.8,'var(--gold)');}
+else if(loc.hindIII==='lacZ外（ori付近）'){siteMarker('HindIII',-Math.PI*.5,'var(--gold)');}
+else if(loc.hindIII==='ampR遺伝子内'){siteMarker('HindIII',-Math.PI*.05,'var(--gold)');}
+else if(loc.hindIII==='なし'){/* no marker */}
+svg+='</svg>';
+return svg;}
+
+function renderP2(){
+const el=document.getElementById('p2c');
+let h=phaseHdr(1);
+h+='<div class="info-popup" style="margin-bottom:12px"><div class="title">🔑 選択のカギ</div>';
+h+='<span style="color:var(--green)">ampR</span>: アンピシリン入り培地でプラスミド保持菌<strong>だけ</strong>を生存させる選択マーカー<br>';
+h+='<span style="color:var(--magenta)">lacZ</span>: β-ガラクトシダーゼ遺伝子。<strong>lacZ内に遺伝子が挿入されると壊れ → 白コロニー</strong>（青白選択の原理）<br>';
+h+='<span style="color:var(--gold)">制限酵素サイト</span>: EcoRI/HindIII<strong>両方</strong>が必要。しかも<strong>挿入位置が重要！</strong></div>';
+// Show selected plasmid map
+h+='<div class="card" style="margin-bottom:12px;text-align:center"><h3 style="font-size:.85rem;color:var(--cyan);margin-bottom:8px">プラスミドマップ</h3>';
+const selP=PLASMIDS.find(p=>p.id===p2sel);
+h+=drawPlasmidSVG(selP||PLASMIDS[0]);
+h+='<p style="font-size:.75rem;color:var(--text2);margin-top:4px">'+(selP?selP.name+'のマップ':'プラスミドを選択するとマップが更新されます')+'</p></div>';
+h+='<h3 style="font-size:.85rem;color:var(--text2);margin:8px 0 6px">ベクター候補（架空）</h3>';
+PLASMIDS.forEach(p=>{
+h+='<div class="opt-card'+(p2sel===p.id?' selected':'')+'" onclick="p2pick(\''+p.id+'\')">';
+h+='<b>'+p.name+'</b>';
+h+='<div style="display:flex;flex-wrap:wrap;gap:4px;margin:4px 0">';
+h+='<span class="badge cyan">ori</span>';
+if(p.features.ampR)h+='<span class="badge green">ampR</span>';else h+='<span class="badge red">ampR欠損</span>';
+if(p.features.lacZ)h+='<span class="badge magenta">lacZ</span>';
+h+='<span class="badge gold">EcoRI: '+p.features.ecoRI+'</span>';
+h+='<span class="badge gold">HindIII: '+(p.features.hindIII||'なし')+'</span>';
+h+='</div><span>'+p.desc+'</span></div>';});
+h+='<div style="text-align:center;margin-top:12px"><button class="btn primary" onclick="p2check()">🔄 このプラスミドを採用</button></div>';
+h+='<div id="p2fb" class="info-popup"><div class="title">💡 考えよう</div>挿入位置がlacZ内なら青白選択可能。ampR内だと耐性が失われる。両方のサイトがないと方向性挿入ができない。</div>';
+el.innerHTML=h;}
+
+function p2pick(id){playSound('click');p2sel=id;renderP2();}
+
+function p2check(){
+const fb=document.getElementById('p2fb');
+if(!p2sel){fb.innerHTML='<div class="title" style="color:var(--red)">⚠️</div>プラスミドを選んでください。';playSound('fail');return;}
+const sel=PLASMIDS.find(p=>p.id===p2sel);
+if(sel.correct){
+playSound('success');G.scores[1]=50;G.score+=50;
+fb.innerHTML='<div class="title" style="color:var(--green)">🎉 正解！ +50点</div>'+sel.why+'<br><br>EcoRI/HindIIIでpGF-1を切断 → lacZ遺伝子内が開く → インスリン遺伝子を挿入 → <strong>lacZが破壊</strong> → 青白選択で白コロニーとして検出可能！';
+setTimeout(()=>{playSound('levelup');showScreen('phase3');renderP3();showTut('🔗 Phase 3: ライゲーション',['切断したインスリン遺伝子とpGF-1プラスミドを混合します。','<strong>DNAリガーゼ</strong>が付着端同士を連結して<strong>組換えプラスミド</strong>を完成させます。','反応後に生じる<strong>全ての産物</strong>を考えてみましょう。']);},2000);
+}else{
+playSound('fail');G.score=Math.max(0,G.score-5);
+fb.innerHTML='<div class="title" style="color:var(--red)">✗ このプラスミドには問題があります</div>'+sel.why;}}
+</script>
+<script>
+// ===== PHASE 3: LIGATION =====
+let ligSel=new Set();
+function renderP3(){
+const el=document.getElementById('p3c');
+let h=phaseHdr(2);
+h+='<div class="card" style="margin-bottom:12px"><h3 style="font-size:.85rem;color:var(--cyan);margin-bottom:8px">🔗 ライゲーション反応</h3>';
+h+='<p style="font-size:.85rem;line-height:1.7">インスリン遺伝子断片とEcoRI/HindIIIで開環したpGF-1を混合し、<strong style="color:var(--gold)">DNAリガーゼ</strong>を加えます。</p>';
+h+='<div class="dna-seq" style="margin-top:8px;font-size:.85rem">pGF-1（開環）: ...<span class="sticky">G</span>____<span class="sticky">AGCTT</span>...<br>';
+h+='インスリン断片: <span class="sticky">AATT</span><span class="ins">C—遺伝子—A</span><span class="sticky">AGCT</span><br>';
+h+='↓ DNAリガーゼ ↓<br>';
+h+='結合: ...<span class="cut">GAATTC</span><span class="ins">—遺伝子—</span><span class="cut">AAGCTT</span>...</div></div>';
+h+='<h3 style="font-size:.85rem;color:var(--text2);margin:8px 0 6px">ライゲーション後に生じる産物は？（正しいもの全て選択）</h3>';
+const opts=[
+{id:'recomb',label:'✅ 組換えプラスミド（インスリン遺伝子入り）',desc:'インスリン遺伝子がpGF-1のlacZ内に挿入された環状DNA',ok:true},
+{id:'self',label:'🔄 自己閉環プラスミド（空のまま閉じた）',desc:'pGF-1が遺伝子を取り込まずに元通り閉じてしまった',ok:true},
+{id:'linear',label:'📏 未反応の直鎖DNA断片',desc:'リガーゼで連結されなかった断片がそのまま残る',ok:true},
+{id:'double',label:'⚠️ インスリン遺伝子2コピー入りプラスミド',desc:'通常条件ではほぼ起こらない',ok:false}];
+opts.forEach(o=>{h+='<div class="opt-card" id="lig-'+o.id+'" onclick="ligTog(\''+o.id+'\')"><b>'+o.label+'</b><span>'+o.desc+'</span></div>';});
+h+='<div style="text-align:center;margin-top:12px"><button class="btn primary" onclick="p3check()">🔗 回答確定</button></div>';
+h+='<div id="p3fb" class="info-popup"><div class="title">💡 ポイント</div>ライゲーション反応は完全ではありません。様々な産物が混在するからこそ、後の<strong>選択工程</strong>が重要になります！</div>';
+el.innerHTML=h;}
+
+function ligTog(id){playSound('click');if(ligSel.has(id))ligSel.delete(id);else ligSel.add(id);document.getElementById('lig-'+id).classList.toggle('selected',ligSel.has(id));}
+
+function p3check(){
+const fb=document.getElementById('p3fb');
+const ok=ligSel.has('recomb')&&ligSel.has('self')&&ligSel.has('linear')&&!ligSel.has('double');
+if(ok){
+playSound('success');G.scores[2]=50;G.score+=50;
+['recomb','self','linear'].forEach(id=>document.getElementById('lig-'+id).classList.add('correct'));
+fb.innerHTML='<div class="title" style="color:var(--green)">🎉 正解！ +50点</div>ライゲーション後には①<strong>組換えプラスミド</strong> ②<strong>自己閉環プラスミド</strong> ③<strong>未反応断片</strong>が混在します。<br><span style="color:var(--gold)">次は大腸菌へ導入（形質転換）します！</span>';
+setTimeout(()=>{playSound('levelup');showScreen('phase4');renderP4();showTut('🌡️ Phase 4: 形質転換（ヒートショック法）',['ライゲーション産物を<strong>大腸菌</strong>に導入します。','CaCl₂処理した大腸菌を<strong>氷上→42℃→氷上</strong>と温度変化させます。','ゲージの針を<strong>目標温度</strong>でストップ！3ステップ成功で形質転換完了。']);},2000);
+}else{playSound('fail');G.score=Math.max(0,G.score-5);fb.innerHTML='<div class="title" style="color:var(--red)">△ もう一度考えてみましょう</div>ランダムな連結反応で生じうる全ての産物を考えてください。';}}
+
+// ===== PHASE 4: HEAT SHOCK =====
+let hsStep=0,hsTN=0,hsDir=1,hsSp=0.012;
+function renderP4(){
+const el=document.getElementById('p4c');
+let h=phaseHdr(3);
+h+='<div class="card" style="text-align:center">';
+h+='<h3 style="font-size:.85rem;color:var(--cyan);margin-bottom:8px">🌡️ ヒートショック法</h3>';
+h+='<div style="display:flex;justify-content:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">';
+h+='<div class="badge '+(hsStep===0?'cyan':(hsStep>0?'green':''))+'">① 氷上 0℃</div>';
+h+='<div class="badge '+(hsStep===1?'red':(hsStep>1?'green':''))+'">② 42℃ ヒートショック</div>';
+h+='<div class="badge '+(hsStep===2?'cyan':(hsStep>2?'green':''))+'">③ 氷上 0℃</div></div>';
+h+='<canvas id="hsg" width="200" height="200" style="display:block;margin:0 auto"></canvas>';
+h+='<div style="font-family:Orbitron;font-size:2rem;font-weight:900;margin:6px 0" id="hst">0℃</div>';
+h+='<div style="font-size:.8rem;color:var(--text2);margin-bottom:8px" id="hsm">ターゲット温度でSTOPを押せ！</div>';
+h+='<button class="btn" id="hsbtn" onclick="hsStop()" style="animation:pulse 1.5s infinite">🎯 STOP!!</button></div>';
+h+='<div id="p4fb" class="info-popup"><div class="title">💡 原理</div>CaCl₂処理でCa²⁺が細胞膜に結合 → 急速加温で膜に一時的な孔が開く → プラスミドDNAが侵入</div>';
+el.innerHTML=h;hsStep=0;hsTN=0;hsDir=1;hsSp=0.012;requestAnimationFrame(hsAnim);}
+
+function hsAnim(){
+if(!document.getElementById('phase4').classList.contains('active'))return;
+const cv=document.getElementById('hsg');if(!cv)return;
+const ctx=cv.getContext('2d'),cx=100,cy=100,r=80;
+ctx.clearRect(0,0,200,200);
+const sA=Math.PI*.75,eA=Math.PI*2.25,rng=eA-sA;
+ctx.beginPath();ctx.arc(cx,cy,r,sA,eA);ctx.strokeStyle='rgba(255,255,255,.1)';ctx.lineWidth=12;ctx.lineCap='round';ctx.stroke();
+const tgt=[[0,5],[40,44],[0,5]][hsStep]||[0,5];
+const s1=sA+rng*(tgt[0]/50),s2=sA+rng*(tgt[1]/50);
+ctx.beginPath();ctx.arc(cx,cy,r,s1,s2);ctx.strokeStyle=hsStep===1?'rgba(255,23,68,.4)':'rgba(0,229,255,.4)';ctx.lineWidth=16;ctx.stroke();
+const a=sA+rng*hsTN;
+ctx.beginPath();ctx.arc(cx,cy,r,sA,a);ctx.strokeStyle=hsTN>.7?'var(--red)':'var(--cyan)';ctx.lineWidth=12;ctx.lineCap='round';ctx.stroke();
+const nx=cx+(r-4)*Math.cos(a),ny=cy+(r-4)*Math.sin(a);
+ctx.beginPath();ctx.arc(nx,ny,6,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
+const tmp=Math.round(50*hsTN);
+const te=document.getElementById('hst');if(te){te.textContent=tmp+'℃';te.style.color=tmp>35?'var(--red)':'var(--cyan)';}
+const labels=['① 氷上冷却（0℃で止めろ！）','② ヒートショック（42℃で止めろ！）','③ 再び氷上（0℃で止めろ！）'];
+const me=document.getElementById('hsm');if(me)me.textContent=labels[hsStep]||'完了';
+hsTN+=hsDir*hsSp;if(hsTN>1){hsTN=1;hsDir=-1;}if(hsTN<0){hsTN=0;hsDir=1;}
+requestAnimationFrame(hsAnim);}
+
+function hsStop(){
+const tmp=Math.round(50*hsTN),tgt=[[0,5],[40,44],[0,5]][hsStep];
+if(tmp>=tgt[0]&&tmp<=tgt[1]){
+playSound('success');G.scores[3]+=20;G.score+=20;hsStep++;hsSp+=0.004;
+if(hsStep>=3){
+document.getElementById('hsbtn').disabled=true;
+document.getElementById('p4fb').innerHTML='<div class="title" style="color:var(--green)">🎉 形質転換成功！ +60点</div>正確な温度操作で大腸菌にプラスミドが導入されました。<br><span style="color:var(--gold)">次は培養して菌を増やします！</span>';
+setTimeout(()=>{playSound('levelup');showScreen('phase5');renderP5();showTut('🔥 Phase 5: 培養（37℃維持ゲーム）',['形質転換した大腸菌をLB/amp培地に塗布しました。','<strong>37℃</strong>で安定して培養する必要があります。','温度が勝手に変動するので、<strong>ヒーターのON/OFF</strong>を切り替えて37℃付近を維持してください！','コロニーが成長するのを見届けましょう。']);},2000);
+}else{document.getElementById('p4fb').innerHTML='<div class="title" style="color:var(--green)">✓ ステップ'+hsStep+'/3 成功！次へ…加速！</div>';}
+}else{playSound('fail');G.score=Math.max(0,G.score-5);document.getElementById('p4fb').innerHTML='<div class="title" style="color:var(--red)">✗ 目標: '+(hsStep===1?'42℃':'0℃')+'付近。再挑戦！</div>';}}
+</script>
+<script>
+// ===== PHASE 5: INCUBATION (temperature maintenance game) =====
+let incTemp=37,incTarget=37,incHeater=true,incTime=0,incMaxTime=300,incScore=0,incAF=null;
+let colonies5=[];
+function renderP5(){
+const el=document.getElementById('p5c');
+let h=phaseHdr(4);
+h+='<div class="card" style="text-align:center">';
+h+='<h3 style="font-size:.85rem;color:var(--cyan);margin-bottom:8px">🔥 37℃培養 — 温度維持チャレンジ</h3>';
+h+='<div style="font-family:Orbitron;font-size:2.5rem;font-weight:900;margin:8px 0" id="incT">37.0℃</div>';
+h+='<div class="progress-bar" style="height:20px;margin:8px 0;border-radius:10px"><div id="incBar" class="fill" style="width:0%;background:linear-gradient(90deg,var(--cyan),var(--green))"></div></div>';
+h+='<div style="font-size:.8rem;color:var(--text2);margin-bottom:8px" id="incMsg">37℃付近を維持してコロニーを育てよう！</div>';
+h+='<div style="position:relative;margin:12px auto;width:200px;height:200px">';
+h+='<div class="plate" id="incPlate" style="width:200px;height:200px"></div></div>';
+h+='<div style="margin:12px 0;font-size:.8rem" id="incCol">コロニー: 成長中...</div>';
+h+='<button class="btn" id="incBtn" onclick="toggleHeater()" style="padding:12px 40px;font-size:1rem">🔥 ヒーター: <span id="incHState">ON</span></button>';
+h+='</div>';
+h+='<div id="p5fb" class="info-popup"><div class="title">💡 培養の原理</div>大腸菌の最適増殖温度は<strong>37℃</strong>。温度が高すぎると菌が死に、低すぎると増殖が遅くなります。<br>アンピシリン入り培地なので<strong>プラスミド保持菌だけ</strong>が増殖します。</div>';
+el.innerHTML=h;
+incTemp=37;incHeater=true;incTime=0;incScore=0;colonies5=[];
+cancelAnimationFrame(incAF);incAF=requestAnimationFrame(incLoop);}
+
+function toggleHeater(){playSound('click');incHeater=!incHeater;const s=document.getElementById('incHState');if(s)s.textContent=incHeater?'ON':'OFF';const b=document.getElementById('incBtn');if(b){b.style.borderColor=incHeater?'var(--red)':'var(--cyan)';b.style.color=incHeater?'var(--red)':'var(--cyan)';}}
+
+let incFC=0;
+function incLoop(){
+if(!document.getElementById('phase5').classList.contains('active'))return;
+incFC++;
+if(incFC%3===0){// update every 3 frames
+incTime++;
+// Temperature dynamics
+const drift=(Math.random()-.5)*0.8 + (incHeater?0.3:-0.4);
+incTemp+=drift;
+incTemp=Math.max(20,Math.min(50,incTemp));
+// Score
+const diff=Math.abs(incTemp-incTarget);
+if(diff<2)incScore+=2;else if(diff<5)incScore+=1;
+// Update display
+const te=document.getElementById('incT');
+if(te){te.textContent=incTemp.toFixed(1)+'℃';te.style.color=Math.abs(incTemp-37)<3?'var(--green)':(incTemp>42||incTemp<30?'var(--red)':'var(--gold)');}
+const bar=document.getElementById('incBar');
+if(bar)bar.style.width=Math.min(100,incTime/incMaxTime*100)+'%';
+// Grow colonies
+if(incTime%15===0 && Math.abs(incTemp-37)<5 && colonies5.length<12){
+colonies5.push({x:20+Math.random()*60,y:20+Math.random()*60,r:2+Math.random()*3,blue:Math.random()>0.35});
+}
+// Render colonies on plate
+const plate=document.getElementById('incPlate');
+if(plate){
+let ch='';
+colonies5.forEach((c,i)=>{
+const size=Math.min(c.r+(incTime/incMaxTime)*10,20);
+ch+='<div style="position:absolute;left:'+c.x+'%;top:'+c.y+'%;width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+(c.blue?'#3b9df2':'#fffef5')+';border:1px solid rgba(31,45,68,.2);transition:all .5s"></div>';});
+plate.innerHTML=ch;}
+const cm=document.getElementById('incCol');
+if(cm)cm.textContent='コロニー: '+colonies5.length+'個 (青: '+colonies5.filter(c=>c.blue).length+' 白: '+colonies5.filter(c=>!c.blue).length+')';
+// Complete
+if(incTime>=incMaxTime){
+const pts=Math.min(50,Math.round(incScore/incMaxTime*25));
+G.scores[4]=pts;G.score+=pts;
+playSound('success');
+document.getElementById('incBtn').disabled=true;
+document.getElementById('p5fb').innerHTML='<div class="title" style="color:var(--green)">🎉 培養完了！ +'+pts+'点</div>'+colonies5.length+'個のコロニーが出現しました！<br><span style="color:var(--blue)">青コロニー: '+colonies5.filter(c=>c.blue).length+'個</span> / <span>白コロニー: '+colonies5.filter(c=>!c.blue).length+'個</span><br><br><span style="color:var(--gold)">次はいよいよ最終フェーズ！正しいコロニーを選び出します。</span><br><button class="btn primary" style="margin-top:12px" onclick="goP6()">🧫 コロニー選択へ →</button>';
+return;}}
+incAF=requestAnimationFrame(incLoop);}
+
+function goP6(){playSound('levelup');showScreen('phase6');renderP6();showTut('🧫 Phase 6: コロニー選択',['培養の結果、4種類の培地にコロニーが出現しました。','各培地の条件とコロニーの色から、<strong>インスリンを産生する大腸菌</strong>を特定してください。','<span style="color:var(--blue)">青コロニー</span>: lacZ正常（遺伝子挿入なし）','<span>白コロニー</span>: lacZ破壊（遺伝子挿入あり→インスリン候補！）','正しい培地の正しい色のコロニーを選べばクリア！']);}
+</script>
+<script>
+// ===== PHASE 6: COLONY SELECTION (4 plates combined) =====
+let p6plate='',p6col='';
+const PLATES_DATA=[
+{id:'LB',name:'ⓐ LB培地',desc:'普通培地（抗生物質なし）',
+colonies:[{x:22,y:25,s:20,c:'white'},{x:45,y:35,s:22,c:'white'},{x:65,y:20,s:18,c:'white'},{x:30,y:55,s:24,c:'white'},{x:55,y:60,s:16,c:'white'},{x:70,y:50,s:20,c:'white'},{x:40,y:70,s:18,c:'white'}],
+note:'全ての大腸菌が増殖。プラスミドの有無は区別不可。'},
+{id:'LBamp',name:'ⓑ LB/amp培地',desc:'アンピシリン入り',
+colonies:[{x:30,y:30,s:22,c:'white'},{x:55,y:25,s:20,c:'white'},{x:40,y:55,s:24,c:'white'},{x:65,y:50,s:18,c:'white'}],
+note:'プラスミド(ampR)保持菌のみ。しかし組換え/自己閉環の区別不可。'},
+{id:'LBampXI',name:'ⓓ LB/amp/X-gal/IPTG培地',desc:'アンピシリン＋青白選択',
+colonies:[{x:25,y:30,s:26,c:'blue'},{x:55,y:20,s:20,c:'white',target:true},{x:70,y:45,s:22,c:'blue'},{x:35,y:55,s:24,c:'white',target:true},{x:60,y:65,s:18,c:'blue'}],
+note:'ampR保持菌のみ生存。青＝lacZ正常（空ベクター）、白＝lacZ破壊（挿入あり＝候補）'},
+{id:'LBnoamp',name:'ⓒ LB/amp培地（チューブA: プラスミドなし対照）',desc:'対照実験',
+colonies:[],
+note:'プラスミドを入れていない対照群。コロニーなし→ampが効いている証拠。'}
+];
+
+function renderP6(){
+const el=document.getElementById('p6c');
+let h=phaseHdr(5);
+h+='<div class="info-popup" style="margin-bottom:12px"><div class="title">🧫 最終判定 — インスリン産生コロニーを見つけろ！</div>';
+h+='4種類の培地にコロニーが出現しました。<strong>インスリン遺伝子を持つ大腸菌</strong>はどれ？<br>';
+h+='ヒント: <span style="color:var(--green)">ampR選択</span>でプラスミド保持菌を絞り、<span style="color:var(--magenta)">青白選択</span>で挿入候補を見分ける！</div>';
+h+='<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:16px">';
+PLATES_DATA.forEach(pl=>{
+const isSel=p6plate===pl.id;
+h+='<div class="plate-wrap"><div style="font-size:.8rem;font-weight:700;margin-bottom:4px;color:'+(isSel?'var(--gold)':'var(--text2)')+'">'+pl.name+'</div>';
+h+='<div class="plate" style="border-color:'+(isSel?'var(--gold)':'rgba(132,184,194,.45)')+';width:160px;height:160px" onclick="p6pickPlate(\''+pl.id+'\')">';
+pl.colonies.forEach((c,ci)=>{
+const key=pl.id+'-'+ci;
+const sel=p6col===key;
+h+='<div class="colony '+(c.c)+' '+(sel?'selected':'')+'" style="left:'+c.x+'%;top:'+c.y+'%;width:'+c.s+'px;height:'+c.s+'px" onclick="event.stopPropagation();p6pickCol(\''+pl.id+'\',\''+key+'\')"></div>';});
+if(pl.colonies.length===0)h+='<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:.7rem;color:rgba(0,0,0,.4)">コロニーなし</div>';
+h+='</div><div class="plate-label">'+pl.desc+'</div></div>';});
+h+='</div>';
+h+='<div style="text-align:center;margin-top:12px"><button class="btn primary" onclick="p6check()">🔍 このコロニーを最終鑑定</button></div>';
+h+='<div id="p6fb" class="info-popup"><div class="title">💡 判定のロジック</div>';
+h+='① ⓐ LB培地: 全菌が増殖 → 選択なし<br>';
+h+='② ⓑ LB/amp: プラスミド保持菌のみ → 組換え/空ベクターの区別不可<br>';
+h+='③ ⓒ 対照(プラスミドなし): コロニーなし → ampが機能している証拠<br>';
+h+='④ ⓓ LB/amp/X-gal/IPTG: <strong style="color:var(--gold)">白コロニー = インスリン挿入候補！</strong></div>';
+el.innerHTML=h;}
+
+function p6pickPlate(id){playSound('click');p6plate=id;p6col='';renderP6();}
+function p6pickCol(plateId,colKey){playSound('click');p6plate=plateId;p6col=colKey;renderP6();}
+
+function p6check(){
+const fb=document.getElementById('p6fb');
+if(!p6col){fb.innerHTML='<div class="title" style="color:var(--red)">⚠️</div>コロニーをタップして選んでください。';playSound('fail');return;}
+// Check: must be from LBampXI plate AND white colony
+const plate=PLATES_DATA.find(p=>p.id===p6plate);
+const colIdx=parseInt(p6col.split('-')[1]);
+const col=plate?plate.colonies[colIdx]:null;
+if(p6plate==='LBampXI'&&col&&col.c==='white'){
+playSound('complete');G.scores[5]=50;G.score+=50;launchConfetti();
+fb.innerHTML='<div class="title" style="color:var(--green)">🎉🎉🎉 大正解！！ +50点</div>';
+fb.innerHTML+='<p style="margin-top:8px;line-height:1.8">ⓓ LB/amp/X-gal/IPTG培地の<strong>白コロニー</strong>は：<br>✅ ampR → プラスミド保持<br>✅ lacZ破壊 → インスリン遺伝子が挿入された<br>→ <strong style="color:var(--gold)">インスリン産生大腸菌の最有力候補！</strong></p>';
+fb.innerHTML+='<p style="margin-top:8px;color:var(--magenta)">🧬 この大腸菌を大量培養すれば、ヒトのインスリンを生産する工場が完成します！</p>';
+fb.innerHTML+='<div style="text-align:center;margin-top:16px"><button class="btn primary" onclick="showRes()">🏆 最終結果を見る</button></div>';
+}else if(p6plate==='LBampXI'&&col&&col.c==='blue'){
+playSound('fail');G.score=Math.max(0,G.score-10);
+fb.innerHTML='<div class="title" style="color:var(--red)">✗ 青コロニー ≠ インスリン候補</div>青コロニーはlacZが正常＝遺伝子が挿入されていない（自己閉環プラスミド）。<strong>白コロニー</strong>を選んでください！';
+}else if(p6plate==='LB'){
+playSound('fail');G.score=Math.max(0,G.score-5);
+fb.innerHTML='<div class="title" style="color:var(--red)">✗ LB培地ではプラスミドの有無が区別できません</div>全ての大腸菌が増殖するため、目的の菌を特定できません。<strong>アンピシリン入り</strong>の培地を探しましょう。';
+}else if(p6plate==='LBamp'){
+playSound('fail');G.score=Math.max(0,G.score-5);
+fb.innerHTML='<div class="title" style="color:var(--gold)">△ 惜しい！</div>LB/amp培地ではプラスミド保持菌は選択できますが、<strong>組換え体と空ベクターの区別</strong>ができません。X-gal/IPTGを含む培地で青白選択が必要です。';
+}else if(p6plate==='LBnoamp'){
+playSound('fail');
+fb.innerHTML='<div class="title" style="color:var(--red)">この培地にはコロニーがありません</div>プラスミドなしの対照群なので、アンピシリンで全て死滅。これは<strong>アンピシリン選択が機能している証拠</strong>です。';
+}else{playSound('fail');fb.innerHTML='<div class="title" style="color:var(--red)">✗ もう一度考えてみましょう</div>';}}
+
+// ===== RESULTS =====
+function showRes(){
+showScreen('results');playSound('complete');launchConfetti();
+const total=G.scores.reduce((a,b)=>a+b,0);
+const rank=total>=280?'マスターエンジニア':total>=220?'シニアリサーチャー':total>=160?'ジュニアリサーチャー':total>=100?'研修生':'見習い';
+const stars=total>=280?'⭐⭐⭐':total>=200?'⭐⭐☆':total>=100?'⭐☆☆':'☆☆☆';
+const el=document.getElementById('resc');
+let h='<h2 style="font-size:1rem;color:var(--text2);letter-spacing:4px;margin-bottom:8px">MISSION COMPLETE</h2>';
+h+='<div style="font-size:3rem;margin:8px 0;letter-spacing:8px">'+stars+'</div>';
+h+='<div style="font-family:Orbitron;font-size:3rem;font-weight:900;background:linear-gradient(135deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent">'+total+'</div>';
+h+='<p style="color:var(--text2);margin:4px 0 6px">TOTAL SCORE</p>';
+h+='<div style="font-family:Orbitron;font-size:1.1rem;color:var(--gold);margin-bottom:16px">🏅 '+rank+'</div>';
+h+='<div class="review-grid">';
+PHASES.forEach((p,i)=>{h+='<div class="review-item"><div class="rv-label">'+p.icon+' '+p.name+'</div><div class="rv-val" style="color:var(--'+p.badge+')">'+G.scores[i]+'</div></div>';});
+h+='</div>';
+h+='<div class="card" style="text-align:left;margin:16px 0"><h3 style="font-size:.85rem;color:var(--cyan);margin-bottom:10px">📚 学習まとめ</h3><div style="font-size:.82rem;line-height:1.8">';
+h+='<p><strong style="color:var(--cyan)">① 制限酵素</strong>: 回文配列を認識してDNAを切断。2種類使えば方向性のある挿入が可能。</p>';
+h+='<p><strong style="color:var(--green)">② ベクター</strong>: ori + ampR + lacZ + 制限酵素サイト。<u>サイトの位置</u>がlacZ内であることが重要。</p>';
+h+='<p><strong style="color:var(--gold)">③ ライゲーション</strong>: DNAリガーゼで連結。組換え体・自己閉環・未反応断片が混在。</p>';
+h+='<p><strong style="color:var(--red)">④ ヒートショック</strong>: CaCl₂+42℃で膜透過性↑ → プラスミド導入。</p>';
+h+='<p><strong style="color:var(--magenta)">⑤ 培養</strong>: 37℃で最適増殖。ampR選択で非保持菌を除去。</p>';
+h+='<p><strong style="color:var(--blue)">⑥ 青白選択</strong>: LB/amp/X-gal/IPTG培地の白コロニー = lacZ破壊 = 遺伝子挿入候補。</p>';
+h+='<p style="margin-top:10px;color:var(--gold)">🧬 こうして作られた大腸菌が、糖尿病治療に不可欠なヒトインスリンを大量生産しています！</p>';
+h+='</div></div>';
+h+='<button class="btn primary" onclick="resetG()">🔄 もう一度挑戦</button>';
+el.innerHTML=h;}
+
+function resetG(){G.score=0;G.scores=[0,0,0,0,0,0];p1sel.clear();ligSel.clear();p2sel='';p6plate='';p6col='';hsStep=0;incTime=0;colonies5=[];showScreen('title');}
+document.addEventListener('touchend',function(e){if(e.target.tagName==='BUTTON'||e.target.classList.contains('opt-card')||e.target.classList.contains('colony')){e.preventDefault();}},{passive:false});
+</script>
+</body></html>
