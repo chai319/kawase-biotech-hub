@@ -8,17 +8,17 @@
 :root{--bg:#0a0e1a;--bg2:#111827;--cyan:#00e5ff;--green:#76ff03;--magenta:#e040fb;--red:#ff1744;--gold:#ffd600;--blue:#448aff;--text:#e0e0e0;--text2:#9e9e9e;--glass:rgba(17,24,39,.85)}
 body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;min-height:100vh;touch-action:manipulation;-webkit-user-select:none;user-select:none}
 h1,h2,h3,.label{font-family:'Orbitron','Noto Sans JP',sans-serif}
-.screen{display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:20px;animation:fadeIn .6s}
+.screen{display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:20px;animation:fadeIn .6s;will-change:opacity,transform}
 .screen.active{display:flex}
 @keyframes fadeIn{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
 @keyframes glow{0%,100%{text-shadow:0 0 10px var(--cyan),0 0 40px rgba(0,229,255,.3)}50%{text-shadow:0 0 20px var(--cyan),0 0 60px rgba(0,229,255,.5)}}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-.btn{font-family:'Orbitron',sans-serif;padding:14px 36px;border:2px solid var(--cyan);background:transparent;color:var(--cyan);font-size:1rem;cursor:pointer;border-radius:10px;transition:all .2s;letter-spacing:2px;min-height:52px}
+.btn{font-family:'Orbitron',sans-serif;padding:14px 36px;border:2px solid var(--cyan);background:transparent;color:var(--cyan);font-size:1rem;cursor:pointer;border-radius:10px;transition:all .2s;letter-spacing:2px;min-height:52px;touch-action:none}
 .btn:active{transform:scale(.95);background:rgba(0,229,255,.2)}
 .btn.primary{background:linear-gradient(135deg,rgba(0,229,255,.2),rgba(118,255,3,.2));border-color:var(--green);color:var(--green)}
 .btn.danger{border-color:var(--red);color:var(--red)}
-.card{background:var(--glass);border:1px solid rgba(0,229,255,.2);border-radius:16px;padding:24px;backdrop-filter:blur(10px)}
+.card{background:var(--glass);border:1px solid rgba(0,229,255,.2);border-radius:16px;padding:24px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transform:translateZ(0)}
 .badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:700;letter-spacing:1px}
 .badge.cyan{background:rgba(0,229,255,.15);color:var(--cyan);border:1px solid rgba(0,229,255,.3)}
 .badge.green{background:rgba(118,255,3,.15);color:var(--green);border:1px solid rgba(118,255,3,.3)}
@@ -34,7 +34,7 @@ h1,h2,h3,.label{font-family:'Orbitron','Noto Sans JP',sans-serif}
 .tutorial-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);z-index:100;display:flex;align-items:center;justify-content:center;animation:fadeIn .4s;padding:20px}
 .tutorial-box{max-width:650px;padding:28px;border-radius:20px;background:var(--bg2);border:1px solid rgba(0,229,255,.3);text-align:center;max-height:90vh;overflow-y:auto}
 .tutorial-box h2{color:var(--cyan);margin-bottom:16px;font-size:1.2rem}
-.opt-card{background:var(--glass);border:2px solid rgba(255,255,255,.1);border-radius:12px;padding:16px;text-align:left;cursor:pointer;transition:all .3s;margin:8px 0}
+.opt-card{background:var(--glass);border:2px solid rgba(255,255,255,.1);border-radius:12px;padding:16px;text-align:left;cursor:pointer;transition:all .3s;margin:8px 0;touch-action:none;transform:translateZ(0)}
 .opt-card:active{transform:scale(.97)}
 .opt-card.selected{border-color:var(--gold);box-shadow:0 0 20px rgba(255,214,0,.3)}
 .opt-card.correct{border-color:var(--green);box-shadow:0 0 20px rgba(118,255,3,.4)}
@@ -45,10 +45,10 @@ h1,h2,h3,.label{font-family:'Orbitron','Noto Sans JP',sans-serif}
 .dna-seq{font-family:monospace;font-size:1rem;letter-spacing:1px;padding:12px;background:rgba(0,0,0,.3);border-radius:8px;text-align:center;line-height:2;overflow-x:auto;word-break:break-all}
 .dna-seq .cut{color:var(--red);font-weight:700}.dna-seq .ins{color:var(--green);font-weight:700}.dna-seq .sticky{color:var(--gold);font-weight:700}.dna-seq .normal{color:var(--text2)}
 .timer-bar{font-family:'Orbitron',sans-serif;font-size:1.5rem;font-weight:900;text-align:center;margin:8px 0}
-.plate{width:180px;height:180px;border-radius:50%;border:8px solid rgba(132,184,194,.45);background:radial-gradient(circle at 38% 28%,rgba(255,255,255,.3),transparent 40%),#f6dfac;position:relative;box-shadow:inset 0 0 20px rgba(88,58,22,.13)}
-.colony{position:absolute;border-radius:50%;border:2px solid rgba(31,45,68,.12);box-shadow:0 3px 7px rgba(31,45,68,.12);cursor:pointer;transition:all .3s}
+.plate{width:180px;height:180px;border-radius:50%;border:8px solid rgba(132,184,194,.45);background:radial-gradient(circle at 38% 28%,rgba(255,255,255,.3),transparent 40%),#f6dfac;position:relative;box-shadow:inset 0 0 20px rgba(88,58,22,.13);transform:translateZ(0)}
+.colony{position:absolute;border-radius:50%;border:2px solid rgba(31,45,68,.12);box-shadow:0 3px 7px rgba(31,45,68,.12);cursor:pointer;transition:all .3s;will-change:width,height,transform;transform:translateZ(0)}
 .colony.white{background:#fffef5}.colony.blue{background:#3b9df2}
-.colony.selected{box-shadow:0 0 0 5px rgba(255,214,0,.4);transform:scale(1.15)}
+.colony.selected{box-shadow:0 0 0 5px rgba(255,214,0,.4);transform:scale(1.15) translateZ(0)}
 .review-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px 0;width:100%}
 .review-item{text-align:center;padding:16px;border-radius:12px;background:var(--glass);border:1px solid rgba(255,255,255,.1)}
 .review-item .rv-label{font-size:.7rem;color:var(--text2);margin-bottom:4px}
@@ -56,15 +56,14 @@ h1,h2,h3,.label{font-family:'Orbitron','Noto Sans JP',sans-serif}
 .info-popup{background:var(--glass);border:1px solid rgba(0,229,255,.3);border-radius:12px;padding:16px;font-size:.85rem;line-height:1.7;margin-top:8px}
 .info-popup .title{color:var(--cyan);font-weight:700;margin-bottom:4px}
 .confetti-container{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:200;overflow:hidden}
-.confetti-piece{position:absolute;width:10px;height:18px;top:-20px;animation:confetti-fall 2.5s linear forwards}
+.confetti-piece{position:absolute;width:10px;height:18px;top:-20px;animation:confetti-fall 2.5s linear forwards;will-change:transform}
 @keyframes confetti-fall{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
-#particles-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+#particles-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;will-change:transform}
 .plate-wrap{display:inline-block;text-align:center;margin:8px}
 .plate-label{font-size:.75rem;color:var(--text2);margin-top:6px}
 @media(max-width:768px){.review-grid{grid-template-columns:1fr 1fr}}
 </style></head><body>
 <canvas id="particles-bg"></canvas>
-<!-- TITLE -->
 <div id="title" class="screen active">
 <div class="content" style="text-align:center">
 <div style="margin-bottom:20px;font-size:4rem;animation:float 3s infinite">🧬</div>
@@ -81,7 +80,7 @@ h1,h2,h3,.label{font-family:'Orbitron','Noto Sans JP',sans-serif}
 <div style="text-align:center;padding:8px;border:1px solid rgba(0,229,255,.2);border-radius:10px;width:90px;background:rgba(0,229,255,.05)"><div style="font-size:1.3rem">🔥</div><div style="font-size:.7rem">培養</div></div>
 <div style="text-align:center;padding:8px;border:1px solid rgba(0,229,255,.2);border-radius:10px;width:90px;background:rgba(0,229,255,.05)"><div style="font-size:1.3rem">🧫</div><div style="font-size:.7rem">コロニー選択</div></div>
 </div></div>
-<button class="btn primary" onclick="startGame()">▶ 研究開始</button>
+<button class="btn primary" id="btn-start">▶ 研究開始</button>
 </div></div>
 <div id="phase1" class="screen"><div class="content" id="p1c"></div></div>
 <div id="phase2" class="screen"><div class="content" id="p2c"></div></div>
@@ -94,435 +93,173 @@ h1,h2,h3,.label{font-family:'Orbitron','Noto Sans JP',sans-serif}
 <script>
 const G={score:0,phase:0,scores:[0,0,0,0,0,0]};
 const PHASES=[{name:'DNA切断',badge:'cyan',icon:'✂️'},{name:'プラスミド選択',badge:'green',icon:'🔄'},{name:'ライゲーション',badge:'gold',icon:'🔗'},{name:'形質転換',badge:'red',icon:'🌡️'},{name:'培養',badge:'magenta',icon:'🔥'},{name:'コロニー選択',badge:'blue',icon:'🧫'}];
-const audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-function playSound(t){audioCtx.resume();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);
+let audioCtx=null;
+function initAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();}
+function playSound(t){initAudio();if(audioCtx.state==='suspended')audioCtx.resume();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);
 if(t==='success'){o.type='sine';o.frequency.setValueAtTime(523,audioCtx.currentTime);o.frequency.setValueAtTime(659,audioCtx.currentTime+.1);o.frequency.setValueAtTime(784,audioCtx.currentTime+.2);g.gain.setValueAtTime(.15,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.01,audioCtx.currentTime+.5);o.start();o.stop(audioCtx.currentTime+.5);}
 else if(t==='fail'){o.type='sawtooth';o.frequency.setValueAtTime(200,audioCtx.currentTime);o.frequency.linearRampToValueAtTime(100,audioCtx.currentTime+.5);g.gain.setValueAtTime(.12,audioCtx.currentTime);g.gain.linearRampToValueAtTime(0,audioCtx.currentTime+.5);o.start();o.stop(audioCtx.currentTime+.5);}
 else if(t==='click'){o.type='sine';o.frequency.setValueAtTime(1000,audioCtx.currentTime);g.gain.setValueAtTime(.08,audioCtx.currentTime);g.gain.linearRampToValueAtTime(0,audioCtx.currentTime+.06);o.start();o.stop(audioCtx.currentTime+.06);}
 else if(t==='levelup'){o.type='sine';o.frequency.setValueAtTime(440,audioCtx.currentTime);o.frequency.setValueAtTime(554,audioCtx.currentTime+.12);o.frequency.setValueAtTime(659,audioCtx.currentTime+.24);o.frequency.setValueAtTime(880,audioCtx.currentTime+.36);g.gain.setValueAtTime(.15,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.01,audioCtx.currentTime+.7);o.start();o.stop(audioCtx.currentTime+.7);}
 else{o.type='sine';o.frequency.setValueAtTime(523,audioCtx.currentTime);g.gain.setValueAtTime(.12,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.01,audioCtx.currentTime+.4);o.start();o.stop(audioCtx.currentTime+.4);}}
+
+function addFastClick(id,cb){const el=typeof id==='string'?document.getElementById(id):id;if(!el)return;el.addEventListener('pointerdown',e=>{e.preventDefault();initAudio();cb(e);});}
+
 const pCV=document.getElementById('particles-bg'),pCx=pCV.getContext('2d');let pts=[];
 function initP(){pCV.width=innerWidth;pCV.height=innerHeight;pts=[];for(let i=0;i<30;i++)pts.push({x:Math.random()*pCV.width,y:Math.random()*pCV.height,r:Math.random()*2+.5,dx:(Math.random()-.5)*.3,dy:(Math.random()-.5)*.3,a:Math.random()*.3+.1});}
 function drawP(){pCx.clearRect(0,0,pCV.width,pCV.height);pts.forEach(p=>{pCx.beginPath();pCx.arc(p.x,p.y,p.r,0,Math.PI*2);pCx.fillStyle=`rgba(118,255,3,${p.a})`;pCx.fill();p.x+=p.dx;p.y+=p.dy;if(p.x<0||p.x>pCV.width)p.dx*=-1;if(p.y<0||p.y>pCV.height)p.dy*=-1;});requestAnimationFrame(drawP);}
 addEventListener('resize',initP);initP();drawP();
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');scrollTo(0,0);}
-function showTut(title,steps,cb){const ov=document.createElement('div');ov.className='tutorial-overlay';ov.id='tut';let h='<div class="tutorial-box"><h2>'+title+'</h2>';steps.forEach((s,i)=>{h+='<div style="display:flex;align-items:flex-start;gap:10px;margin:6px 0;padding:8px;border-radius:8px;background:rgba(0,229,255,.05)"><div style="font-family:Orbitron;color:var(--cyan);font-weight:700;min-width:20px">'+(i+1)+'</div><div style="font-size:.85rem;line-height:1.6;text-align:left">'+s+'</div></div>';});h+='<button class="btn primary" style="margin-top:14px" onclick="document.getElementById(\'tut\').remove();'+(cb||'')+'">OK！始めよう</button></div>';ov.innerHTML=h;document.body.appendChild(ov);}
+function showTut(title,steps,cbName){const ov=document.createElement('div');ov.className='tutorial-overlay';ov.id='tut';let h='<div class="tutorial-box"><h2>'+title+'</h2>';steps.forEach((s,i)=>{h+='<div style="display:flex;align-items:flex-start;gap:10px;margin:6px 0;padding:8px;border-radius:8px;background:rgba(0,229,255,.05)"><div style="font-family:Orbitron;color:var(--cyan);font-weight:700;min-width:20px">'+(i+1)+'</div><div style="font-size:.85rem;line-height:1.6;text-align:left">'+s+'</div></div>';});h+='<button class="btn primary" id="btn-tut-ok" style="margin-top:14px">OK！始めよう</button></div>';ov.innerHTML=h;document.body.appendChild(ov);addFastClick('btn-tut-ok',()=>{document.getElementById('tut').remove();window[cbName]();});}
 function phaseHdr(idx){const p=PHASES[idx];return '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px"><div><span class="badge '+p.badge+'">PHASE '+(idx+1)+'</span> <span style="margin-left:8px;font-weight:700">'+p.name+'</span></div><div class="score-bar">SCORE: <span id="ps">'+G.scores[idx]+'</span> | 合計: '+G.score+'</div></div><div class="progress-bar" style="margin-bottom:12px"><div class="fill" style="width:'+(idx/6*100)+'%"></div></div>';}
 function launchConfetti(){const c=document.getElementById('confetti-container');const cols=['#ff1744','#00e5ff','#76ff03','#ffd600','#e040fb','#448aff'];for(let i=0;i<60;i++){const p=document.createElement('div');p.className='confetti-piece';p.style.left=Math.random()*100+'%';p.style.background=cols[i%cols.length];p.style.animationDuration=(1.5+Math.random()*1.5)+'s';p.style.animationDelay=(Math.random()*.3)+'s';c.appendChild(p);setTimeout(()=>p.remove(),3500);}}
 
-// ===== PHASE 1: DNA CUTTING (timed) =====
+// ===== PHASE 1: DNA CUTTING =====
 let p1sel=new Set(),p1timer=60,p1interval=null;
-const ENZYMES=[
-{id:'EcoRI',site:'GAATTC',end:'5\'-AATT-3\' 突出'},
-{id:'BamHI',site:'GGATCC',end:'5\'-GATC-3\' 突出'},
-{id:'HindIII',site:'AAGCTT',end:'5\'-AGCT-3\' 突出'},
-{id:'SmaI',site:'CCCGGG',end:'平滑末端'},
-{id:'PstI',site:'CTGCAG',end:'3\'-ACGT-5\' 突出'},
-{id:'NotI',site:'GCGGCCGC',end:'5\'-GGCC-3\' 突出'}
-];
-function startGame(){showScreen('phase1');showTut('✂️ Phase 1: DNA切断',['ヒトDNAからインスリン遺伝子を<strong>制限酵素</strong>で切り出します。','DNA配列中の<strong>認識配列</strong>を探し、正しい制限酵素を<strong>2種類</strong>選んでください。','<strong style="color:var(--red)">制限時間あり！</strong>速いほど高得点。よく見て素早く判断しよう。'],'renderP1()');}
+const ENZYMES=[{id:'EcoRI',site:'GAATTC',end:'5\'-AATT-3\' 突出'},{id:'BamHI',site:'GGATCC',end:'5\'-GATC-3\' 突出'},{id:'HindIII',site:'AAGCTT',end:'5\'-AGCT-3\' 突出'},{id:'SmaI',site:'CCCGGG',end:'平滑末端'},{id:'PstI',site:'CTGCAG',end:'3\'-ACGT-5\' 突出'},{id:'NotI',site:'GCGGCCGC',end:'5\'-GGCC-3\' 突出'}];
+addFastClick('btn-start',()=>startGame());
+function startGame(){showScreen('phase1');showTut('✂️ Phase 1: DNA切断',['ヒトDNAからインスリン遺伝子を<strong>制限酵素</strong>で切り出します。','DNA配列中の<strong>認識配列</strong>を探し、正しい制限酵素を<strong>2種類</strong>選んでください。','<strong style="color:var(--red)">制限時間あり！</strong>速いほど高得点。よく見て素早く判断しよう。'],'renderP1');}
 function renderP1(){
 p1sel.clear();p1timer=60;
 const el=document.getElementById('p1c');
 let h=phaseHdr(0);
 h+='<div class="timer-bar" id="p1timer" style="color:var(--cyan)">⏱ 60秒</div>';
 h+='<div class="card" style="margin-bottom:12px"><h3 style="font-size:.85rem;color:var(--cyan);margin-bottom:8px">🧬 ヒトDNA — インスリン遺伝子領域</h3>';
-h+='<div class="dna-seq">';
-h+='<span class="normal">...ATCGGTAC</span>';
-h+='<span class="cut">GAATTC</span>';
-h+='<span class="normal">TACCG</span>';
-h+='<span class="ins">ATGTTCGTCAACCAACACTTGTGTGGCTCACACCTGGTGGAAGCTCTCTACCTAGTGTGCGGGGAACGAGGCTTCTTCTACACACCCAAGACCCGCCGGGAGGCAGAGGACCTGCAGGTGGGGCAGGTGGAGCTGGGCGGGGGCCCTGGTGCAGGCAGCCTGCAGCCCTTGGCCCTGGAGGGGTCCCTGCAGAAGCGTGGCATTGTGGAACAATGCTGTACCAGCATCTGCTCCCTCTACCAGCTGGAGAACTACTGCAACTGA</span>';
-h+='<span class="normal">GCCTA</span>';
-h+='<span class="cut">AAGCTT</span>';
-h+='<span class="normal">GCATTGCGA...</span>';
-h+='</div>';
-h+='<p style="font-size:.75rem;color:var(--text2);margin-top:6px;text-align:center">緑: インスリン遺伝子配列 ｜ 赤: 制限酵素認識部位 ｜ 灰: ヒトDNA</p></div>';
-h+='<h3 style="font-size:.85rem;color:var(--text2);margin:12px 0 6px">制限酵素を2つ選択せよ</h3>';
-h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
-ENZYMES.forEach(e=>{
-h+='<div class="opt-card'+(p1sel.has(e.id)?' selected':'')+'" onclick="p1toggle(\''+e.id+'\')">';
-h+='<b>'+e.id+'</b><span>認識配列: <code>'+e.site+'</code><br>切断末端: '+e.end+'</span></div>';});
-h+='</div>';
-h+='<div style="text-align:center;margin-top:12px"><button class="btn primary" onclick="p1check()">✂️ DNAを切断！</button></div>';
-h+='<div id="p1fb" class="info-popup"><div class="title">💡 ヒント</div>DNA配列中に隠れている<strong style="color:var(--red)">赤い認識配列</strong>を探して、それに対応する酵素を選びましょう。</div>';
+h+='<div class="dna-seq"><span class="normal">...ATCGGTAC</span><span class="cut">GAATTC</span><span class="normal">TACCG</span><span class="ins">ATGTTCGTCAACCAACACTTGTGTGGCTCACACCTGGTGGAAGCTCTCTACCTAGTGTGCGGGGAACGAGGCTTCTTCTACACACCCAAGACCCGCCGGGAGGCAGAGGACCTGCAGGTGGGGCAGGTGGAGCTGGGCGGGGGCCCTGGTGCAGGCAGCCTGCAGCCCTTGGCCCTGGAGGGGTCCCTGCAGAAGCGTGGCATTGTGGAACAATGCTGTACCAGCATCTGCTCCCTCTACCAGCTGGAGAACTACTGCAACTGA</span><span class="normal">GCCTA</span><span class="cut">AAGCTT</span><span class="normal">GCATTGCGA...</span></div>';
+h+='<p style="font-size:.75rem;color:var(--text2);margin-top:6px;text-align:center">緑: インスリン遺伝子配列 ｜ 赤: 制限酵素認識部位 ｜ 灰: ヒトDNA</p></div><h3 style="font-size:.85rem;color:var(--text2);margin:12px 0 6px">制限酵素を2つ選択せよ</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="p1-opts"></div>';
+h+='<div style="text-align:center;margin-top:12px"><button class="btn primary" id="btn-p1-check">✂️ DNAを切断！</button></div><div id="p1fb" class="info-popup"><div class="title">💡 ヒント</div>DNA配列中の隠れている<strong style="color:var(--red)">赤い認識配列</strong>を探して、それに対応する酵素を選びましょう。</div>';
 el.innerHTML=h;
+const opts=document.getElementById('p1-opts');
+ENZYMES.forEach(e=>{const c=document.createElement('div');c.className='opt-card';c.innerHTML='<b>'+e.id+'</b><span>認識配列: <code>'+e.site+'</code><br>切断末端: '+e.end+'</span>';addFastClick(c,()=>p1toggle(e.id,c));opts.appendChild(c);});
+addFastClick('btn-p1-check',()=>p1check());
 if(p1interval)clearInterval(p1interval);
 p1interval=setInterval(()=>{p1timer--;const te=document.getElementById('p1timer');if(te){te.textContent='⏱ '+p1timer+'秒';if(p1timer<=10)te.style.color='var(--red)';if(p1timer<=0){clearInterval(p1interval);p1check();}}},1000);}
 
-function p1toggle(id){playSound('click');if(p1sel.has(id))p1sel.delete(id);else{if(p1sel.size>=2)return;p1sel.add(id);}
-document.querySelectorAll('#p1c .opt-card').forEach(c=>{const eid=c.querySelector('b').textContent;c.classList.toggle('selected',p1sel.has(eid));});}
+function p1toggle(id,el){playSound('click');if(p1sel.has(id))p1sel.delete(id);else{if(p1sel.size>=2)return;p1sel.add(id);}
+document.querySelectorAll('#p1-opts .opt-card').forEach(c=>{c.classList.toggle('selected',p1sel.has(c.querySelector('b').textContent));});}
 
 function p1check(){
-clearInterval(p1interval);
-const fb=document.getElementById('p1fb');
+clearInterval(p1interval);const fb=document.getElementById('p1fb');
 if(p1sel.size!==2){fb.innerHTML='<div class="title" style="color:var(--red)">⚠️</div>2種類の制限酵素を選んでください。';playSound('fail');p1interval=setInterval(()=>{p1timer--;const te=document.getElementById('p1timer');if(te){te.textContent='⏱ '+p1timer+'秒';if(p1timer<=0){clearInterval(p1interval);p1check();}}},1000);return;}
 if(p1sel.has('EcoRI')&&p1sel.has('HindIII')){
-playSound('success');const bonus=Math.max(0,p1timer)*2;const pts=50+bonus;G.scores[0]=pts;G.score+=pts;
+playSound('success');const bonus=Math.max(0,p1timer)*2,pts=50+bonus;G.scores[0]=pts;G.score+=pts;
 fb.innerHTML='<div class="title" style="color:var(--green)">🎉 正解！ +'+(pts)+'点（タイムボーナス: +'+bonus+'）</div>EcoRI（GAATTC）で左端を、HindIII（AAGCTT）で右端を切断。異なる付着端により<strong>方向性のある挿入</strong>が可能に！<br><div class="dna-seq" style="margin-top:8px"><span class="sticky">AATT</span><span class="ins">C—インスリン遺伝子—A</span><span class="sticky">AGCT</span></div>';
-setTimeout(()=>{playSound('levelup');showScreen('phase2');renderP2();showTut('🔄 Phase 2: プラスミド選択',['インスリン遺伝子を大腸菌に運ぶ<strong>ベクター（プラスミド）</strong>を選びます。','4つの候補プラスミドのマップを見て、最適なものを選んでください。','<span style="color:var(--green)">ampR（アンピシリン耐性）</span>: アンピシリン入り培地でプラスミド保持菌を選択するためのマーカー','<span style="color:var(--magenta)">lacZ（β-ガラクトシダーゼ）</span>: 遺伝子が挿入されるとlacZが壊れ、<strong>白コロニー</strong>として見分けられる（青白選択）','プラスミドマップの<strong>制限酵素サイトの位置</strong>がカギ！']);},2000);
-}else if(p1sel.has('EcoRI')||p1sel.has('HindIII')){
-playSound('fail');G.score=Math.max(0,G.score-5);
-fb.innerHTML='<div class="title" style="color:var(--gold)">△ 片方は正解！</div>配列をもう一度よく見て、残りの認識部位を探してください。';p1interval=setInterval(()=>{p1timer--;const te=document.getElementById('p1timer');if(te){te.textContent='⏱ '+p1timer+'秒';if(p1timer<=0){clearInterval(p1interval);}}},1000);
-}else{playSound('fail');G.score=Math.max(0,G.score-10);fb.innerHTML='<div class="title" style="color:var(--red)">✗ 不正解</div>DNA配列中の赤い部分が認識配列です。GAATTCとAAGCTTに注目！';p1interval=setInterval(()=>{p1timer--;const te=document.getElementById('p1timer');if(te){te.textContent='⏱ '+p1timer+'秒';if(p1timer<=0){clearInterval(p1interval);}}},1000);}}
-</script>
-<script>
-// ===== PHASE 2: PLASMID SELECTION (fictional plasmids with detailed maps) =====
+setTimeout(()=>{playSound('levelup');showScreen('phase2');renderP2();showTut('🔄 Phase 2: プラスミド選択',['インスリン遺伝子を大腸菌に運ぶ<strong>ベクター（プラスミド）</strong>を選びます。','4つの候補プラスミドのマップを見て、最適なものを選んでください。','<span style="color:var(--green)">ampR（アンピシリン耐性）</span>: アンピシリン入り培地でプラスミド保持菌を選択するためのマーカー','<span style="color:var(--magenta)">lacZ（β-ガラクトシダーゼ）</span>: 遺伝子が挿入されるとlacZが壊れ、<strong>白コロニー</strong>として見分けられる（青白選択）','プラスミドマップの<strong>制限酵素サイトの位置</strong>がカギ！'],'renderP2');},2000);
+}else{playSound('fail');G.score=Math.max(0,G.score-5);fb.innerHTML='<div class="title" style="color:var(--red)">✗ 不正解</div>DNA配列中の赤い認識配列（GAATTCとAAGCTT）に注目してください。';}}
+
+// ===== PHASE 2: PLASMID SELECTION =====
 let p2sel='';
 const PLASMIDS=[
-{id:'pGF-1',name:'pGF-1',correct:true,
-features:{ori:true,ampR:true,lacZ:true,ecoRI:'lacZ内',hindIII:'lacZ内'},
-desc:'EcoRI/HindIIIサイトがlacZ遺伝子内（MCS）にある。挿入されればlacZが破壊され青白選択可能。ampR健在。',
-why:'✅ 全条件クリア。MCS内の両サイトへの挿入でlacZが壊れ、白コロニーとして検出可能。'},
-{id:'pGF-2',name:'pGF-2',correct:false,
-features:{ori:true,ampR:true,lacZ:true,ecoRI:'lacZ外（ori付近）',hindIII:'lacZ外（ori付近）'},
-desc:'EcoRI/HindIIIサイトがlacZ遺伝子の外（ori付近）にある。',
-why:'❌ 挿入されてもlacZは壊れない → 青白選択で区別不可。全てのコロニーが青になってしまう。'},
-{id:'pGF-3',name:'pGF-3',correct:false,
-features:{ori:true,ampR:true,lacZ:true,ecoRI:'ampR遺伝子内',hindIII:'ampR遺伝子内'},
-desc:'EcoRI/HindIIIサイトがampR遺伝子内にある。',
-why:'❌ 挿入されるとampRが壊れる → アンピシリン培地で生存できない → 目的の菌も選択できない。'},
-{id:'pGF-4',name:'pGF-4',correct:false,
-features:{ori:true,ampR:false,lacZ:true,ecoRI:'lacZ内',hindIII:'なし'},
-desc:'HindIIIサイトがない。ampR遺伝子も欠損。',
-why:'❌ 片方の酵素サイトしかない → 方向性挿入不可。ampRなし → 選択マーカーがない。'}
+{id:'pGF-1',name:'pGF-1',correct:true,features:{ori:true,ampR:true,lacZ:true,ecoRI:'lacZ内',hindIII:'lacZ内'},desc:'EcoRI/HindIIIサイトがlacZ内（MCS）にある。挿入されればlacZが破壊され青白選択可能。',why:'✅ 全条件クリア。lacZ内挿入により白コロニーとして検出可能。'},
+{id:'pGF-2',name:'pGF-2',correct:false,features:{ori:true,ampR:true,lacZ:true,ecoRI:'lacZ外（ori付近）',hindIII:'lacZ外（ori付近）'},desc:'EcoRI/HindIIIサイトがlacZ遺伝子の外にある。',why:'❌ 挿入されてもlacZは壊れないため、青白選択で区別不可。'},
+{id:'pGF-3',name:'pGF-3',correct:false,features:{ori:true,ampR:true,lacZ:true,ecoRI:'ampR遺伝子内',hindIII:'ampR遺伝子内'},desc:'EcoRI/HindIIIサイトがampR遺伝子内にある。',why:'❌ 挿入されるとampRが壊れ、アンピシリン培地で生存できない。'},
+{id:'pGF-4',name:'pGF-4',correct:false,features:{ori:true,ampR:false,lacZ:true,ecoRI:'lacZ内',hindIII:'なし'},desc:'HindIIIサイトがなく、ampR遺伝子も欠損。',why:'❌ 方向性挿入不可かつ選択マーカーなし。'}
 ];
-
 function drawPlasmidSVG(p){
-const r=90,cx=130,cy=130;
-let svg='<svg width="260" height="260" viewBox="0 0 260 260" style="display:block;margin:0 auto">';
-// background circle
-svg+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="22"/>';
-// ori region (top, always present)
-svg+='<path d="M'+cx+' '+(cy-r)+' A'+r+' '+r+' 0 0 1 '+(cx+r*.7)+' '+(cy-r*.7)+'" fill="none" stroke="rgba(0,229,255,.5)" stroke-width="22"/>';
-svg+='<text x="'+(cx+15)+'" y="'+(cy-r-8)+'" fill="var(--cyan)" font-size="10" font-weight="700">ori</text>';
-// ampR region (right)
-if(p.features.ampR){
-svg+='<path d="M'+(cx+r*.7)+' '+(cy-r*.7)+' A'+r+' '+r+' 0 0 1 '+(cx+r)+' '+cy+'" fill="none" stroke="var(--green)" stroke-width="22"/>';
-svg+='<text x="'+(cx+r+5)+'" y="'+(cy-15)+'" fill="var(--green)" font-size="10" font-weight="700">ampR</text>';
-}else{
-svg+='<path d="M'+(cx+r*.7)+' '+(cy-r*.7)+' A'+r+' '+r+' 0 0 1 '+(cx+r)+' '+cy+'" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="22" stroke-dasharray="4"/>';
-svg+='<text x="'+(cx+r+5)+'" y="'+(cy-15)+'" fill="var(--red)" font-size="9" font-weight="700">ampR欠損</text>';
-}
-// lacZ region (bottom)
-svg+='<path d="M'+(cx+r)+' '+cy+' A'+r+' '+r+' 0 0 1 '+(cx-r*.7)+' '+(cy+r*.7)+'" fill="none" stroke="var(--magenta)" stroke-width="22"/>';
-svg+='<text x="'+(cx-5)+'" y="'+(cy+r+16)+'" fill="var(--magenta)" font-size="10" font-weight="700">lacZ</text>';
-// remaining arc
-svg+='<path d="M'+(cx-r*.7)+' '+(cy+r*.7)+' A'+r+' '+r+' 0 0 1 '+cx+' '+(cy-r)+'" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="22"/>';
-// enzyme sites markers
-function siteMarker(label,angle,color){
-const x=cx+(r+32)*Math.cos(angle),y=cy+(r+32)*Math.sin(angle);
-const mx=cx+r*Math.cos(angle),my=cy+r*Math.sin(angle);
-svg+='<circle cx="'+mx+'" cy="'+my+'" r="5" fill="'+color+'" stroke="#fff" stroke-width="1.5"/>';
-svg+='<text x="'+x+'" y="'+(y+4)+'" fill="'+color+'" font-size="8" font-weight="700" text-anchor="middle">'+label+'</text>';
-}
-// Position enzyme sites based on where they are
-const loc=p.features;
-if(loc.ecoRI==='lacZ内'){siteMarker('EcoRI',Math.PI*.6,'var(--gold)');} 
-else if(loc.ecoRI==='lacZ外（ori付近）'){siteMarker('EcoRI',-Math.PI*.35,'var(--gold)');}
-else if(loc.ecoRI==='ampR遺伝子内'){siteMarker('EcoRI',-Math.PI*.15,'var(--gold)');}
-if(loc.hindIII==='lacZ内'){siteMarker('HindIII',Math.PI*.8,'var(--gold)');}
-else if(loc.hindIII==='lacZ外（ori付近）'){siteMarker('HindIII',-Math.PI*.5,'var(--gold)');}
-else if(loc.hindIII==='ampR遺伝子内'){siteMarker('HindIII',-Math.PI*.05,'var(--gold)');}
-else if(loc.hindIII==='なし'){/* no marker */}
-svg+='</svg>';
-return svg;}
-
+const r=90,cx=130,cy=130;let svg='<svg width="260" height="260" viewBox="0 0 260 260" style="display:block;margin:0 auto"><circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="22"/><path d="M'+cx+' '+(cy-r)+' A'+r+' '+r+' 0 0 1 '+(cx+r*.7)+' '+(cy-r*.7)+'" fill="none" stroke="rgba(0,229,255,.5)" stroke-width="22"/><text x="'+(cx+15)+'" y="'+(cy-r-8)+'" fill="var(--cyan)" font-size="10" font-weight="700">ori</text>';
+if(p.features.ampR){svg+='<path d="M'+(cx+r*.7)+' '+(cy-r*.7)+' A'+r+' '+r+' 0 0 1 '+(cx+r)+' '+cy+'" fill="none" stroke="var(--green)" stroke-width="22"/><text x="'+(cx+r+5)+'" y="'+(cy-15)+'" fill="var(--green)" font-size="10" font-weight="700">ampR</text>';}
+else{svg+='<path d="M'+(cx+r*.7)+' '+(cy-r*.7)+' A'+r+' '+r+' 0 0 1 '+(cx+r)+' '+cy+'" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="22" stroke-dasharray="4"/><text x="'+(cx+r+5)+'" y="'+(cy-15)+'" fill="var(--red)" font-size="9" font-weight="700">ampR欠損</text>';}
+svg+='<path d="M'+(cx+r)+' '+cy+' A'+r+' '+r+' 0 0 1 '+(cx-r*.7)+' '+(cy+r*.7)+'" fill="none" stroke="var(--magenta)" stroke-width="22"/><text x="'+(cx-5)+'" y="'+(cy+r+16)+'" fill="var(--magenta)" font-size="10" font-weight="700">lacZ</text><path d="M'+(cx-r*.7)+' '+(cy+r*.7)+' A'+r+' '+r+' 0 0 1 '+cx+' '+(cy-r)+'" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="22"/>';
+function siteMarker(label,angle,color){const x=cx+(r+32)*Math.cos(angle),y=cy+(r+32)*Math.sin(angle),mx=cx+r*Math.cos(angle),my=cy+r*Math.sin(angle);svg+='<circle cx="'+mx+'" cy="'+my+'" r="5" fill="'+color+'" stroke="#fff" stroke-width="1.5"/><text x="'+x+'" y="'+(y+4)+'" fill="'+color+'" font-size="8" font-weight="700" text-anchor="middle">'+label+'</text>';}
+const loc=p.features;if(loc.ecoRI==='lacZ内')siteMarker('EcoRI',Math.PI*.6,'var(--gold)');else if(loc.ecoRI==='lacZ外（ori付近）')siteMarker('EcoRI',-Math.PI*.35,'var(--gold)');else if(loc.ecoRI==='ampR遺伝子内')siteMarker('EcoRI',-Math.PI*.15,'var(--gold)');
+if(loc.hindIII==='lacZ内')siteMarker('HindIII',Math.PI*.8,'var(--gold)');else if(loc.hindIII==='lacZ外（ori付近）')siteMarker('HindIII',-Math.PI*.5,'var(--gold)');else if(loc.hindIII==='ampR遺伝子内')siteMarker('HindIII',-Math.PI*.05,'var(--gold)');
+return svg+'</svg>';}
 function renderP2(){
-const el=document.getElementById('p2c');
-let h=phaseHdr(1);
-h+='<div class="info-popup" style="margin-bottom:12px"><div class="title">🔑 選択のカギ</div>';
-h+='<span style="color:var(--green)">ampR</span>: アンピシリン入り培地でプラスミド保持菌<strong>だけ</strong>を生存させる選択マーカー<br>';
-h+='<span style="color:var(--magenta)">lacZ</span>: β-ガラクトシダーゼ遺伝子。<strong>lacZ内に遺伝子が挿入されると壊れ → 白コロニー</strong>（青白選択の原理）<br>';
-h+='<span style="color:var(--gold)">制限酵素サイト</span>: EcoRI/HindIII<strong>両方</strong>が必要。しかも<strong>挿入位置が重要！</strong></div>';
-// Show selected plasmid map
-h+='<div class="card" style="margin-bottom:12px;text-align:center"><h3 style="font-size:.85rem;color:var(--cyan);margin-bottom:8px">プラスミドマップ</h3>';
-const selP=PLASMIDS.find(p=>p.id===p2sel);
-h+=drawPlasmidSVG(selP||PLASMIDS[0]);
-h+='<p style="font-size:.75rem;color:var(--text2);margin-top:4px">'+(selP?selP.name+'のマップ':'プラスミドを選択するとマップが更新されます')+'</p></div>';
-h+='<h3 style="font-size:.85rem;color:var(--text2);margin:8px 0 6px">ベクター候補（架空）</h3>';
-PLASMIDS.forEach(p=>{
-h+='<div class="opt-card'+(p2sel===p.id?' selected':'')+'" onclick="p2pick(\''+p.id+'\')">';
-h+='<b>'+p.name+'</b>';
-h+='<div style="display:flex;flex-wrap:wrap;gap:4px;margin:4px 0">';
-h+='<span class="badge cyan">ori</span>';
-if(p.features.ampR)h+='<span class="badge green">ampR</span>';else h+='<span class="badge red">ampR欠損</span>';
-if(p.features.lacZ)h+='<span class="badge magenta">lacZ</span>';
-h+='<span class="badge gold">EcoRI: '+p.features.ecoRI+'</span>';
-h+='<span class="badge gold">HindIII: '+(p.features.hindIII||'なし')+'</span>';
-h+='</div><span>'+p.desc+'</span></div>';});
-h+='<div style="text-align:center;margin-top:12px"><button class="btn primary" onclick="p2check()">🔄 このプラスミドを採用</button></div>';
-h+='<div id="p2fb" class="info-popup"><div class="title">💡 考えよう</div>挿入位置がlacZ内なら青白選択可能。ampR内だと耐性が失われる。両方のサイトがないと方向性挿入ができない。</div>';
-el.innerHTML=h;}
-
+const el=document.getElementById('p2c');let h=phaseHdr(1);
+h+='<div class="card" style="margin-bottom:12px;text-align:center" id="p2-map"></div><div id="p2-opts"></div><div style="text-align:center;margin-top:12px"><button class="btn primary" id="btn-p2-check">🔄 このプラスミドを採用</button></div><div id="p2fb" class="info-popup"><div class="title">💡 ヒント</div>挿入位置がlacZ内なら青白選択可能。ampR内だと耐性が失われる点に注意。</div>';
+el.innerHTML=h;const m=document.getElementById('p2-map'),o=document.getElementById('p2-opts');
+const selP=PLASMIDS.find(p=>p.id===p2sel)||PLASMIDS[0];m.innerHTML='<h3 style="font-size:.85rem;color:var(--cyan);margin-bottom:8px">プラスミドマップ</h3>'+drawPlasmidSVG(selP)+'<p style="font-size:.75rem;color:var(--text2);margin-top:4px">'+selP.name+'のマップ</p>';
+PLASMIDS.forEach(p=>{const c=document.createElement('div');c.className='opt-card'+(p2sel===p.id?' selected':'');c.innerHTML='<b>'+p.name+'</b><span>'+p.desc+'</span>';addFastClick(c,()=>p2pick(p.id));o.appendChild(c);});
+addFastClick('btn-p2-check',()=>p2check());}
 function p2pick(id){playSound('click');p2sel=id;renderP2();}
-
 function p2check(){
-const fb=document.getElementById('p2fb');
-if(!p2sel){fb.innerHTML='<div class="title" style="color:var(--red)">⚠️</div>プラスミドを選んでください。';playSound('fail');return;}
+const fb=document.getElementById('p2fb');if(!p2sel){fb.innerHTML='プラスミドを選んでください。';return;}
 const sel=PLASMIDS.find(p=>p.id===p2sel);
-if(sel.correct){
-playSound('success');G.scores[1]=50;G.score+=50;
-fb.innerHTML='<div class="title" style="color:var(--green)">🎉 正解！ +50点</div>'+sel.why+'<br><br>EcoRI/HindIIIでpGF-1を切断 → lacZ遺伝子内が開く → インスリン遺伝子を挿入 → <strong>lacZが破壊</strong> → 青白選択で白コロニーとして検出可能！';
-setTimeout(()=>{playSound('levelup');showScreen('phase3');renderP3();showTut('🔗 Phase 3: ライゲーション',['切断したインスリン遺伝子とpGF-1プラスミドを混合します。','<strong>DNAリガーゼ</strong>が付着端同士を連結して<strong>組換えプラスミド</strong>を完成させます。','反応後に生じる<strong>全ての産物</strong>を考えてみましょう。']);},2000);
-}else{
-playSound('fail');G.score=Math.max(0,G.score-5);
-fb.innerHTML='<div class="title" style="color:var(--red)">✗ このプラスミドには問題があります</div>'+sel.why;}}
-</script>
-<script>
+if(sel.correct){playSound('success');G.scores[1]=50;G.score+=50;fb.innerHTML='<div class="title" style="color:var(--green)">🎉 正解！</div>'+sel.why;setTimeout(()=>{playSound('levelup');showScreen('phase3');renderP3();showTut('🔗 Phase 3: ライゲーション',['遺伝子とプラスミドをDNAリガーゼで連結します。','反応後に生じる産物を全て選びましょう。'],'renderP3');},2000);
+}else{playSound('fail');fb.innerHTML='<div class="title" style="color:var(--red)">✗ 不正解</div>'+sel.why;}}
+
 // ===== PHASE 3: LIGATION =====
 let ligSel=new Set();
 function renderP3(){
-const el=document.getElementById('p3c');
-let h=phaseHdr(2);
-h+='<div class="card" style="margin-bottom:12px"><h3 style="font-size:.85rem;color:var(--cyan);margin-bottom:8px">🔗 ライゲーション反応</h3>';
-h+='<p style="font-size:.85rem;line-height:1.7">インスリン遺伝子断片とEcoRI/HindIIIで開環したpGF-1を混合し、<strong style="color:var(--gold)">DNAリガーゼ</strong>を加えます。</p>';
-h+='<div class="dna-seq" style="margin-top:8px;font-size:.85rem">pGF-1（開環）: ...<span class="sticky">G</span>____<span class="sticky">AGCTT</span>...<br>';
-h+='インスリン断片: <span class="sticky">AATT</span><span class="ins">C—遺伝子—A</span><span class="sticky">AGCT</span><br>';
-h+='↓ DNAリガーゼ ↓<br>';
-h+='結合: ...<span class="cut">GAATTC</span><span class="ins">—遺伝子—</span><span class="cut">AAGCTT</span>...</div></div>';
-h+='<h3 style="font-size:.85rem;color:var(--text2);margin:8px 0 6px">ライゲーション後に生じる産物は？（正しいもの全て選択）</h3>';
-const opts=[
-{id:'recomb',label:'✅ 組換えプラスミド（インスリン遺伝子入り）',desc:'インスリン遺伝子がpGF-1のlacZ内に挿入された環状DNA',ok:true},
-{id:'self',label:'🔄 自己閉環プラスミド（空のまま閉じた）',desc:'pGF-1が遺伝子を取り込まずに元通り閉じてしまった',ok:true},
-{id:'linear',label:'📏 未反応の直鎖DNA断片',desc:'リガーゼで連結されなかった断片がそのまま残る',ok:true},
-{id:'double',label:'⚠️ インスリン遺伝子2コピー入りプラスミド',desc:'通常条件ではほぼ起こらない',ok:false}];
-opts.forEach(o=>{h+='<div class="opt-card" id="lig-'+o.id+'" onclick="ligTog(\''+o.id+'\')"><b>'+o.label+'</b><span>'+o.desc+'</span></div>';});
-h+='<div style="text-align:center;margin-top:12px"><button class="btn primary" onclick="p3check()">🔗 回答確定</button></div>';
-h+='<div id="p3fb" class="info-popup"><div class="title">💡 ポイント</div>ライゲーション反応は完全ではありません。様々な産物が混在するからこそ、後の<strong>選択工程</strong>が重要になります！</div>';
-el.innerHTML=h;}
-
-function ligTog(id){playSound('click');if(ligSel.has(id))ligSel.delete(id);else ligSel.add(id);document.getElementById('lig-'+id).classList.toggle('selected',ligSel.has(id));}
-
+const el=document.getElementById('p3c');let h=phaseHdr(2);
+h+='<div class="card" style="margin-bottom:12px"><h3 style="font-size:.85rem;color:var(--cyan);margin-bottom:8px">🔗 ライゲーション反応</h3><div class="dna-seq" style="font-size:.85rem">pGF-1（開環） + インスリン断片 ↓ DNAリガーゼ ↓</div></div><h3 style="font-size:.85rem;color:var(--text2);margin:8px 0 6px">生じる産物は？（全て選択）</h3><div id="p3-opts"></div><div style="text-align:center;margin-top:12px"><button class="btn primary" id="btn-p3-check">🔗 回答確定</button></div><div id="p3fb" class="info-popup"><div class="title">💡 ヒント</div>反応は完全ではないため、様々な産物が混在します。</div>';
+el.innerHTML=h;const o=document.getElementById('p3-opts'),opts=[{id:'recomb',label:'✅ 組換えプラスミド',ok:true},{id:'self',label:'🔄 自己閉環プラスミド',ok:true},{id:'linear',label:'📏 未反応の直鎖DNA',ok:true},{id:'double',label:'⚠️ 2コピー入り',ok:false}];
+opts.forEach(opt=>{const c=document.createElement('div');c.className='opt-card';c.innerHTML='<b>'+opt.label+'</b>';addFastClick(c,()=>ligTog(opt.id,c));o.appendChild(c);});
+addFastClick('btn-p3-check',()=>p3check());}
+function ligTog(id,el){playSound('click');if(ligSel.has(id))ligSel.delete(id);else ligSel.add(id);el.classList.toggle('selected',ligSel.has(id));}
 function p3check(){
-const fb=document.getElementById('p3fb');
 const ok=ligSel.has('recomb')&&ligSel.has('self')&&ligSel.has('linear')&&!ligSel.has('double');
-if(ok){
-playSound('success');G.scores[2]=50;G.score+=50;
-['recomb','self','linear'].forEach(id=>document.getElementById('lig-'+id).classList.add('correct'));
-fb.innerHTML='<div class="title" style="color:var(--green)">🎉 正解！ +50点</div>ライゲーション後には①<strong>組換えプラスミド</strong> ②<strong>自己閉環プラスミド</strong> ③<strong>未反応断片</strong>が混在します。<br><span style="color:var(--gold)">次は大腸菌へ導入（形質転換）します！</span>';
-setTimeout(()=>{playSound('levelup');showScreen('phase4');renderP4();showTut('🌡️ Phase 4: 形質転換（ヒートショック法）',['ライゲーション産物を<strong>大腸菌</strong>に導入します。','CaCl₂処理した大腸菌を<strong>氷上→42℃→氷上</strong>と温度変化させます。','ゲージの針を<strong>目標温度</strong>でストップ！3ステップ成功で形質転換完了。']);},2000);
-}else{playSound('fail');G.score=Math.max(0,G.score-5);fb.innerHTML='<div class="title" style="color:var(--red)">△ もう一度考えてみましょう</div>ランダムな連結反応で生じうる全ての産物を考えてください。';}}
+if(ok){playSound('success');G.scores[2]=50;G.score+=50;setTimeout(()=>{playSound('levelup');showScreen('phase4');renderP4();showTut('🌡️ Phase 4: 形質転換',['温度変化で大腸菌にプラスミドを導入します。','目標温度でSTOPを押してください。'],'renderP4');},2000);
+}else{playSound('fail');document.getElementById('p3fb').innerHTML='<div class="title" style="color:var(--red)">✗ 不正解</div>全ての可能性を考えてください。';}}
 
 // ===== PHASE 4: HEAT SHOCK =====
 let hsStep=0,hsTN=0,hsDir=1,hsSp=0.012;
 function renderP4(){
-const el=document.getElementById('p4c');
-let h=phaseHdr(3);
-h+='<div class="card" style="text-align:center">';
-h+='<h3 style="font-size:.85rem;color:var(--cyan);margin-bottom:8px">🌡️ ヒートショック法</h3>';
-h+='<div style="display:flex;justify-content:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">';
-h+='<div class="badge '+(hsStep===0?'cyan':(hsStep>0?'green':''))+'">① 氷上 0℃</div>';
-h+='<div class="badge '+(hsStep===1?'red':(hsStep>1?'green':''))+'">② 42℃ ヒートショック</div>';
-h+='<div class="badge '+(hsStep===2?'cyan':(hsStep>2?'green':''))+'">③ 氷上 0℃</div></div>';
-h+='<canvas id="hsg" width="200" height="200" style="display:block;margin:0 auto"></canvas>';
-h+='<div style="font-family:Orbitron;font-size:2rem;font-weight:900;margin:6px 0" id="hst">0℃</div>';
-h+='<div style="font-size:.8rem;color:var(--text2);margin-bottom:8px" id="hsm">ターゲット温度でSTOPを押せ！</div>';
-h+='<button class="btn" id="hsbtn" onclick="hsStop()" style="animation:pulse 1.5s infinite">🎯 STOP!!</button></div>';
-h+='<div id="p4fb" class="info-popup"><div class="title">💡 原理</div>CaCl₂処理でCa²⁺が細胞膜に結合 → 急速加温で膜に一時的な孔が開く → プラスミドDNAが侵入</div>';
-el.innerHTML=h;hsStep=0;hsTN=0;hsDir=1;hsSp=0.012;requestAnimationFrame(hsAnim);}
-
+const el=document.getElementById('p4c');let h=phaseHdr(3);
+h+='<div class="card" style="text-align:center"><canvas id="hsg" width="200" height="200" style="display:block;margin:0 auto"></canvas><div style="font-family:Orbitron;font-size:2rem;font-weight:900" id="hst">0℃</div><div style="font-size:.8rem;color:var(--text2)" id="hsm"></div><button class="btn" id="hsbtn" style="margin-top:10px">🎯 STOP!!</button></div><div id="p4fb" class="info-popup"></div>';
+el.innerHTML=h;hsStep=0;hsTN=0;hsDir=1;addFastClick('hsbtn',()=>hsStop());requestAnimationFrame(hsAnim);}
 function hsAnim(){
 if(!document.getElementById('phase4').classList.contains('active'))return;
-const cv=document.getElementById('hsg');if(!cv)return;
-const ctx=cv.getContext('2d'),cx=100,cy=100,r=80;
-ctx.clearRect(0,0,200,200);
-const sA=Math.PI*.75,eA=Math.PI*2.25,rng=eA-sA;
-ctx.beginPath();ctx.arc(cx,cy,r,sA,eA);ctx.strokeStyle='rgba(255,255,255,.1)';ctx.lineWidth=12;ctx.lineCap='round';ctx.stroke();
-const tgt=[[0,5],[40,44],[0,5]][hsStep]||[0,5];
-const s1=sA+rng*(tgt[0]/50),s2=sA+rng*(tgt[1]/50);
-ctx.beginPath();ctx.arc(cx,cy,r,s1,s2);ctx.strokeStyle=hsStep===1?'rgba(255,23,68,.4)':'rgba(0,229,255,.4)';ctx.lineWidth=16;ctx.stroke();
-const a=sA+rng*hsTN;
-ctx.beginPath();ctx.arc(cx,cy,r,sA,a);ctx.strokeStyle=hsTN>.7?'var(--red)':'var(--cyan)';ctx.lineWidth=12;ctx.lineCap='round';ctx.stroke();
-const nx=cx+(r-4)*Math.cos(a),ny=cy+(r-4)*Math.sin(a);
-ctx.beginPath();ctx.arc(nx,ny,6,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
-const tmp=Math.round(50*hsTN);
-const te=document.getElementById('hst');if(te){te.textContent=tmp+'℃';te.style.color=tmp>35?'var(--red)':'var(--cyan)';}
-const labels=['① 氷上冷却（0℃で止めろ！）','② ヒートショック（42℃で止めろ！）','③ 再び氷上（0℃で止めろ！）'];
-const me=document.getElementById('hsm');if(me)me.textContent=labels[hsStep]||'完了';
-hsTN+=hsDir*hsSp;if(hsTN>1){hsTN=1;hsDir=-1;}if(hsTN<0){hsTN=0;hsDir=1;}
-requestAnimationFrame(hsAnim);}
-
+const cv=document.getElementById('hsg');if(!cv)return;const ctx=cv.getContext('2d'),cx=100,cy=100,r=80;ctx.clearRect(0,0,200,200);
+const sA=Math.PI*.75,eA=Math.PI*2.25,rng=eA-sA,tgt=[[0,5],[40,44],[0,5]][hsStep]||[0,5];
+ctx.beginPath();ctx.arc(cx,cy,r,sA,eA);ctx.strokeStyle='rgba(255,255,255,.1)';ctx.lineWidth=12;ctx.stroke();
+ctx.beginPath();ctx.arc(cx,cy,r,sA+rng*(tgt[0]/50),sA+rng*(tgt[1]/50));ctx.strokeStyle='rgba(0,229,255,.4)';ctx.lineWidth=16;ctx.stroke();
+const a=sA+rng*hsTN;ctx.beginPath();ctx.arc(cx,cy,r,sA,a);ctx.strokeStyle=hsTN>.7?'var(--red)':'var(--cyan)';ctx.lineWidth=12;ctx.stroke();
+const tmp=Math.round(50*hsTN);document.getElementById('hst').textContent=tmp+'℃';
+document.getElementById('hsm').textContent=['① 氷上(0℃)','② 42℃ショック','③ 氷上(0℃)'][hsStep];
+hsTN+=hsDir*hsSp;if(hsTN>1||hsTN<0)hsDir*=-1;requestAnimationFrame(hsAnim);}
 function hsStop(){
 const tmp=Math.round(50*hsTN),tgt=[[0,5],[40,44],[0,5]][hsStep];
-if(tmp>=tgt[0]&&tmp<=tgt[1]){
-playSound('success');G.scores[3]+=20;G.score+=20;hsStep++;hsSp+=0.004;
-if(hsStep>=3){
-document.getElementById('hsbtn').disabled=true;
-document.getElementById('p4fb').innerHTML='<div class="title" style="color:var(--green)">🎉 形質転換成功！ +60点</div>正確な温度操作で大腸菌にプラスミドが導入されました。<br><span style="color:var(--gold)">次は培養して菌を増やします！</span>';
-setTimeout(()=>{playSound('levelup');showScreen('phase5');renderP5();showTut('🔥 Phase 5: 培養（37℃維持ゲーム）',['形質転換した大腸菌をLB/amp培地に塗布しました。','<strong>37℃</strong>で安定して培養する必要があります。','温度が勝手に変動するので、<strong>ヒーターのON/OFF</strong>を切り替えて37℃付近を維持してください！','コロニーが成長するのを見届けましょう。']);},2000);
-}else{document.getElementById('p4fb').innerHTML='<div class="title" style="color:var(--green)">✓ ステップ'+hsStep+'/3 成功！次へ…加速！</div>';}
-}else{playSound('fail');G.score=Math.max(0,G.score-5);document.getElementById('p4fb').innerHTML='<div class="title" style="color:var(--red)">✗ 目標: '+(hsStep===1?'42℃':'0℃')+'付近。再挑戦！</div>';}}
-</script>
-<script>
-// ===== PHASE 5: INCUBATION (temperature maintenance game) =====
-let incTemp=37,incTarget=37,incHeater=true,incTime=0,incMaxTime=300,incScore=0,incAF=null;
-let colonies5=[];
+if(tmp>=tgt[0]&&tmp<=tgt[1]){playSound('success');hsStep++;if(hsStep>=3){G.scores[3]=60;G.score+=60;setTimeout(()=>{showScreen('phase5');renderP5();showTut('🔥 Phase 5: 培養',['37℃付近を維持してコロニーを育てましょう。','ヒーターのON/OFFで温度を調整してください。'],'renderP5');},2000);}
+}else{playSound('fail');}}
+
+// ===== PHASE 5: INCUBATION (Optimized) =====
+let incTemp=37,incHeater=true,incTime=0,incMaxTime=300,incScore=0,incAF=null,colonies5=[];
 function renderP5(){
-const el=document.getElementById('p5c');
-let h=phaseHdr(4);
-h+='<div class="card" style="text-align:center">';
-h+='<h3 style="font-size:.85rem;color:var(--cyan);margin-bottom:8px">🔥 37℃培養 — 温度維持チャレンジ</h3>';
-h+='<div style="font-family:Orbitron;font-size:2.5rem;font-weight:900;margin:8px 0" id="incT">37.0℃</div>';
-h+='<div class="progress-bar" style="height:20px;margin:8px 0;border-radius:10px"><div id="incBar" class="fill" style="width:0%;background:linear-gradient(90deg,var(--cyan),var(--green))"></div></div>';
-h+='<div style="font-size:.8rem;color:var(--text2);margin-bottom:8px" id="incMsg">37℃付近を維持してコロニーを育てよう！</div>';
-h+='<div style="position:relative;margin:12px auto;width:200px;height:200px">';
-h+='<div class="plate" id="incPlate" style="width:200px;height:200px"></div></div>';
-h+='<div style="margin:12px 0;font-size:.8rem" id="incCol">コロニー: 成長中...</div>';
-h+='<button class="btn" id="incBtn" onclick="toggleHeater()" style="padding:12px 40px;font-size:1rem">🔥 ヒーター: <span id="incHState">ON</span></button>';
-h+='</div>';
-h+='<div id="p5fb" class="info-popup"><div class="title">💡 培養の原理</div>大腸菌の最適増殖温度は<strong>37℃</strong>。温度が高すぎると菌が死に、低すぎると増殖が遅くなります。<br>アンピシリン入り培地なので<strong>プラスミド保持菌だけ</strong>が増殖します。</div>';
-el.innerHTML=h;
-incTemp=37;incHeater=true;incTime=0;incScore=0;colonies5=[];
+const el=document.getElementById('p5c');let h=phaseHdr(4);
+h+='<div class="card" style="text-align:center"><div style="font-family:Orbitron;font-size:2.5rem;font-weight:900" id="incT">37.0℃</div><div class="progress-bar" style="height:20px;margin:8px 0"><div id="incBar" class="fill" style="width:0%"></div></div><div id="incPlate" class="plate" style="width:200px;height:200px;margin:12px auto;transform:translateZ(0)"></div><button class="btn" id="incBtn">🔥 ヒーター: ON</button></div><div id="p5fb" class="info-popup"></div>';
+el.innerHTML=h;incTemp=37;incHeater=true;incTime=0;incScore=0;colonies5=[];
+addFastClick('incBtn',()=>toggleHeater());
 cancelAnimationFrame(incAF);incAF=requestAnimationFrame(incLoop);}
-
-function toggleHeater(){playSound('click');incHeater=!incHeater;const s=document.getElementById('incHState');if(s)s.textContent=incHeater?'ON':'OFF';const b=document.getElementById('incBtn');if(b){b.style.borderColor=incHeater?'var(--red)':'var(--cyan)';b.style.color=incHeater?'var(--red)':'var(--cyan)';}}
-
-let incFC=0;
+function toggleHeater(){playSound('click');incHeater=!incHeater;document.getElementById('incBtn').textContent='🔥 ヒーター: '+(incHeater?'ON':'OFF');}
 function incLoop(){
 if(!document.getElementById('phase5').classList.contains('active'))return;
-incFC++;
-if(incFC%3===0){// update every 3 frames
-incTime++;
-// Temperature dynamics
-const drift=(Math.random()-.5)*0.8 + (incHeater?0.3:-0.4);
-incTemp+=drift;
-incTemp=Math.max(20,Math.min(50,incTemp));
-// Score
-const diff=Math.abs(incTemp-incTarget);
-if(diff<2)incScore+=2;else if(diff<5)incScore+=1;
-// Update display
-const te=document.getElementById('incT');
-if(te){te.textContent=incTemp.toFixed(1)+'℃';te.style.color=Math.abs(incTemp-37)<3?'var(--green)':(incTemp>42||incTemp<30?'var(--red)':'var(--gold)');}
-const bar=document.getElementById('incBar');
-if(bar)bar.style.width=Math.min(100,incTime/incMaxTime*100)+'%';
-// Grow colonies
-if(incTime%15===0 && Math.abs(incTemp-37)<5 && colonies5.length<12){
-colonies5.push({x:20+Math.random()*60,y:20+Math.random()*60,r:2+Math.random()*3,blue:Math.random()>0.35});
+incTime++;incTemp+=(Math.random()-.5)*0.8+(incHeater?0.3:-0.4);incTemp=Math.max(20,Math.min(50,incTemp));
+if(Math.abs(incTemp-37)<2)incScore+=2;
+const te=document.getElementById('incT'),bar=document.getElementById('incBar'),plate=document.getElementById('incPlate');
+if(te){te.textContent=incTemp.toFixed(1)+'℃';te.style.color=Math.abs(incTemp-37)<3?'var(--green)':'var(--red)';}
+if(bar)bar.style.width=(incTime/incMaxTime*100)+'%';
+if(incTime%20===0&&Math.abs(incTemp-37)<5&&colonies5.length<15){
+    const c={x:20+Math.random()*60,y:20+Math.random()*60,r:2,blue:Math.random()>0.35,el:document.createElement('div')};
+    c.el.className='colony '+(c.blue?'blue':'white');c.el.style.left=c.x+'%';c.el.style.top=c.y+'%';
+    plate.appendChild(c.el);colonies5.push(c);
 }
-// Render colonies on plate
-const plate=document.getElementById('incPlate');
-if(plate){
-let ch='';
-colonies5.forEach((c,i)=>{
-const size=Math.min(c.r+(incTime/incMaxTime)*10,20);
-ch+='<div style="position:absolute;left:'+c.x+'%;top:'+c.y+'%;width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+(c.blue?'#3b9df2':'#fffef5')+';border:1px solid rgba(31,45,68,.2);transition:all .5s"></div>';});
-plate.innerHTML=ch;}
-const cm=document.getElementById('incCol');
-if(cm)cm.textContent='コロニー: '+colonies5.length+'個 (青: '+colonies5.filter(c=>c.blue).length+' 白: '+colonies5.filter(c=>!c.blue).length+')';
-// Complete
-if(incTime>=incMaxTime){
-const pts=Math.min(50,Math.round(incScore/incMaxTime*25));
-G.scores[4]=pts;G.score+=pts;
-playSound('success');
-document.getElementById('incBtn').disabled=true;
-document.getElementById('p5fb').innerHTML='<div class="title" style="color:var(--green)">🎉 培養完了！ +'+pts+'点</div>'+colonies5.length+'個のコロニーが出現しました！<br><span style="color:var(--blue)">青コロニー: '+colonies5.filter(c=>c.blue).length+'個</span> / <span>白コロニー: '+colonies5.filter(c=>!c.blue).length+'個</span><br><br><span style="color:var(--gold)">次はいよいよ最終フェーズ！正しいコロニーを選び出します。</span><br><button class="btn primary" style="margin-top:12px" onclick="goP6()">🧫 コロニー選択へ →</button>';
-return;}}
+colonies5.forEach(c=>{const s=Math.min(c.r+(incTime/incMaxTime)*12,22);c.el.style.width=s+'px';c.el.style.height=s+'px';});
+if(incTime>=incMaxTime){G.scores[4]=50;G.score+=50;playSound('success');document.getElementById('p5fb').innerHTML='<button class="btn primary" id="btn-p5-next">🧫 次へ</button>';addFastClick('btn-p5-next',()=>goP6());return;}
 incAF=requestAnimationFrame(incLoop);}
+function goP6(){playSound('levelup');showScreen('phase6');renderP6();showTut('🧫 Phase 6: コロニー選択',['正しい培地の正しい色のコロニーを選んでください。'],'renderP6');}
 
-function goP6(){playSound('levelup');showScreen('phase6');renderP6();showTut('🧫 Phase 6: コロニー選択',['培養の結果、4種類の培地にコロニーが出現しました。','各培地の条件とコロニーの色から、<strong>インスリンを産生する大腸菌</strong>を特定してください。','<span style="color:var(--blue)">青コロニー</span>: lacZ正常（遺伝子挿入なし）','<span>白コロニー</span>: lacZ破壊（遺伝子挿入あり→インスリン候補！）','正しい培地の正しい色のコロニーを選べばクリア！']);}
-</script>
-<script>
-// ===== PHASE 6: COLONY SELECTION (4 plates combined) =====
-let p6plate='',p6col='';
+// ===== PHASE 6: COLONY SELECTION =====
+let p6col='';
 const PLATES_DATA=[
-{id:'LB',name:'ⓐ LB培地',desc:'普通培地（抗生物質なし）',
-colonies:[{x:22,y:25,s:20,c:'white'},{x:45,y:35,s:22,c:'white'},{x:65,y:20,s:18,c:'white'},{x:30,y:55,s:24,c:'white'},{x:55,y:60,s:16,c:'white'},{x:70,y:50,s:20,c:'white'},{x:40,y:70,s:18,c:'white'}],
-note:'全ての大腸菌が増殖。プラスミドの有無は区別不可。'},
-{id:'LBamp',name:'ⓑ LB/amp培地',desc:'アンピシリン入り',
-colonies:[{x:30,y:30,s:22,c:'white'},{x:55,y:25,s:20,c:'white'},{x:40,y:55,s:24,c:'white'},{x:65,y:50,s:18,c:'white'}],
-note:'プラスミド(ampR)保持菌のみ。しかし組換え/自己閉環の区別不可。'},
-{id:'LBampXI',name:'ⓓ LB/amp/X-gal/IPTG培地',desc:'アンピシリン＋青白選択',
-colonies:[{x:25,y:30,s:26,c:'blue'},{x:55,y:20,s:20,c:'white',target:true},{x:70,y:45,s:22,c:'blue'},{x:35,y:55,s:24,c:'white',target:true},{x:60,y:65,s:18,c:'blue'}],
-note:'ampR保持菌のみ生存。青＝lacZ正常（空ベクター）、白＝lacZ破壊（挿入あり＝候補）'},
-{id:'LBnoamp',name:'ⓒ LB/amp培地（チューブA: プラスミドなし対照）',desc:'対照実験',
-colonies:[],
-note:'プラスミドを入れていない対照群。コロニーなし→ampが効いている証拠。'}
+{id:'LB',name:'ⓐ LB培地',cols:[{x:22,y:25,c:'white'},{x:45,y:35,c:'white'}]},
+{id:'LBamp',name:'ⓑ LB/amp培地',cols:[{x:30,y:30,c:'white'},{x:55,y:25,c:'white'}]},
+{id:'LBampXI',name:'ⓓ LB/amp/X-gal/IPTG',cols:[{x:25,y:30,c:'blue'},{x:55,y:20,c:'white',target:true},{x:70,y:45,c:'blue'}]},
+{id:'LBnoamp',name:'ⓒ LB/amp(対照)',cols:[]}
 ];
-
 function renderP6(){
-const el=document.getElementById('p6c');
-let h=phaseHdr(5);
-h+='<div class="info-popup" style="margin-bottom:12px"><div class="title">🧫 最終判定 — インスリン産生コロニーを見つけろ！</div>';
-h+='4種類の培地にコロニーが出現しました。<strong>インスリン遺伝子を持つ大腸菌</strong>はどれ？<br>';
-h+='ヒント: <span style="color:var(--green)">ampR選択</span>でプラスミド保持菌を絞り、<span style="color:var(--magenta)">青白選択</span>で挿入候補を見分ける！</div>';
-h+='<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:16px">';
+const el=document.getElementById('p6c');let h=phaseHdr(5);
+h+='<div id="p6-plates" style="display:flex;flex-wrap:wrap;justify-content:center;gap:16px"></div><div style="text-align:center;margin-top:12px"><button class="btn primary" id="btn-p6-check">🔍 最終鑑定</button></div><div id="p6fb" class="info-popup"></div>';
+el.innerHTML=h;const wrap=document.getElementById('p6-plates');
 PLATES_DATA.forEach(pl=>{
-const isSel=p6plate===pl.id;
-h+='<div class="plate-wrap"><div style="font-size:.8rem;font-weight:700;margin-bottom:4px;color:'+(isSel?'var(--gold)':'var(--text2)')+'">'+pl.name+'</div>';
-h+='<div class="plate" style="border-color:'+(isSel?'var(--gold)':'rgba(132,184,194,.45)')+';width:160px;height:160px" onclick="p6pickPlate(\''+pl.id+'\')">';
-pl.colonies.forEach((c,ci)=>{
-const key=pl.id+'-'+ci;
-const sel=p6col===key;
-h+='<div class="colony '+(c.c)+' '+(sel?'selected':'')+'" style="left:'+c.x+'%;top:'+c.y+'%;width:'+c.s+'px;height:'+c.s+'px" onclick="event.stopPropagation();p6pickCol(\''+pl.id+'\',\''+key+'\')"></div>';});
-if(pl.colonies.length===0)h+='<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:.7rem;color:rgba(0,0,0,.4)">コロニーなし</div>';
-h+='</div><div class="plate-label">'+pl.desc+'</div></div>';});
-h+='</div>';
-h+='<div style="text-align:center;margin-top:12px"><button class="btn primary" onclick="p6check()">🔍 このコロニーを最終鑑定</button></div>';
-h+='<div id="p6fb" class="info-popup"><div class="title">💡 判定のロジック</div>';
-h+='① ⓐ LB培地: 全菌が増殖 → 選択なし<br>';
-h+='② ⓑ LB/amp: プラスミド保持菌のみ → 組換え/空ベクターの区別不可<br>';
-h+='③ ⓒ 対照(プラスミドなし): コロニーなし → ampが機能している証拠<br>';
-h+='④ ⓓ LB/amp/X-gal/IPTG: <strong style="color:var(--gold)">白コロニー = インスリン挿入候補！</strong></div>';
-el.innerHTML=h;}
-
-function p6pickPlate(id){playSound('click');p6plate=id;p6col='';renderP6();}
-function p6pickCol(plateId,colKey){playSound('click');p6plate=plateId;p6col=colKey;renderP6();}
-
+    const pw=document.createElement('div');pw.className='plate-wrap';pw.innerHTML='<div style="font-size:.8rem">'+pl.name+'</div>';
+    const p=document.createElement('div');p.className='plate';p.style.width='150px';p.style.height='150px';
+    pl.cols.forEach((c,i)=>{const ce=document.createElement('div');ce.className='colony '+c.c;ce.style.left=c.x+'%';ce.style.top=c.y+'%';ce.style.width='20px';ce.style.height='20px';addFastClick(ce,()=>{document.querySelectorAll('.colony').forEach(x=>x.classList.remove('selected'));ce.classList.add('selected');p6col=pl.id+'-'+i;});p.appendChild(ce);});
+    pw.appendChild(p);wrap.appendChild(pw);
+});
+addFastClick('btn-p6-check',()=>p6check());}
 function p6check(){
-const fb=document.getElementById('p6fb');
-if(!p6col){fb.innerHTML='<div class="title" style="color:var(--red)">⚠️</div>コロニーをタップして選んでください。';playSound('fail');return;}
-// Check: must be from LBampXI plate AND white colony
-const plate=PLATES_DATA.find(p=>p.id===p6plate);
-const colIdx=parseInt(p6col.split('-')[1]);
-const col=plate?plate.colonies[colIdx]:null;
-if(p6plate==='LBampXI'&&col&&col.c==='white'){
-playSound('complete');G.scores[5]=50;G.score+=50;launchConfetti();
-fb.innerHTML='<div class="title" style="color:var(--green)">🎉🎉🎉 大正解！！ +50点</div>';
-fb.innerHTML+='<p style="margin-top:8px;line-height:1.8">ⓓ LB/amp/X-gal/IPTG培地の<strong>白コロニー</strong>は：<br>✅ ampR → プラスミド保持<br>✅ lacZ破壊 → インスリン遺伝子が挿入された<br>→ <strong style="color:var(--gold)">インスリン産生大腸菌の最有力候補！</strong></p>';
-fb.innerHTML+='<p style="margin-top:8px;color:var(--magenta)">🧬 この大腸菌を大量培養すれば、ヒトのインスリンを生産する工場が完成します！</p>';
-fb.innerHTML+='<div style="text-align:center;margin-top:16px"><button class="btn primary" onclick="showRes()">🏆 最終結果を見る</button></div>';
-}else if(p6plate==='LBampXI'&&col&&col.c==='blue'){
-playSound('fail');G.score=Math.max(0,G.score-10);
-fb.innerHTML='<div class="title" style="color:var(--red)">✗ 青コロニー ≠ インスリン候補</div>青コロニーはlacZが正常＝遺伝子が挿入されていない（自己閉環プラスミド）。<strong>白コロニー</strong>を選んでください！';
-}else if(p6plate==='LB'){
-playSound('fail');G.score=Math.max(0,G.score-5);
-fb.innerHTML='<div class="title" style="color:var(--red)">✗ LB培地ではプラスミドの有無が区別できません</div>全ての大腸菌が増殖するため、目的の菌を特定できません。<strong>アンピシリン入り</strong>の培地を探しましょう。';
-}else if(p6plate==='LBamp'){
-playSound('fail');G.score=Math.max(0,G.score-5);
-fb.innerHTML='<div class="title" style="color:var(--gold)">△ 惜しい！</div>LB/amp培地ではプラスミド保持菌は選択できますが、<strong>組換え体と空ベクターの区別</strong>ができません。X-gal/IPTGを含む培地で青白選択が必要です。';
-}else if(p6plate==='LBnoamp'){
-playSound('fail');
-fb.innerHTML='<div class="title" style="color:var(--red)">この培地にはコロニーがありません</div>プラスミドなしの対照群なので、アンピシリンで全て死滅。これは<strong>アンピシリン選択が機能している証拠</strong>です。';
-}else{playSound('fail');fb.innerHTML='<div class="title" style="color:var(--red)">✗ もう一度考えてみましょう</div>';}}
-
-// ===== RESULTS =====
-function showRes(){
-showScreen('results');playSound('complete');launchConfetti();
-const total=G.scores.reduce((a,b)=>a+b,0);
-const rank=total>=280?'マスターエンジニア':total>=220?'シニアリサーチャー':total>=160?'ジュニアリサーチャー':total>=100?'研修生':'見習い';
-const stars=total>=280?'⭐⭐⭐':total>=200?'⭐⭐☆':total>=100?'⭐☆☆':'☆☆☆';
-const el=document.getElementById('resc');
-let h='<h2 style="font-size:1rem;color:var(--text2);letter-spacing:4px;margin-bottom:8px">MISSION COMPLETE</h2>';
-h+='<div style="font-size:3rem;margin:8px 0;letter-spacing:8px">'+stars+'</div>';
-h+='<div style="font-family:Orbitron;font-size:3rem;font-weight:900;background:linear-gradient(135deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent">'+total+'</div>';
-h+='<p style="color:var(--text2);margin:4px 0 6px">TOTAL SCORE</p>';
-h+='<div style="font-family:Orbitron;font-size:1.1rem;color:var(--gold);margin-bottom:16px">🏅 '+rank+'</div>';
-h+='<div class="review-grid">';
-PHASES.forEach((p,i)=>{h+='<div class="review-item"><div class="rv-label">'+p.icon+' '+p.name+'</div><div class="rv-val" style="color:var(--'+p.badge+')">'+G.scores[i]+'</div></div>';});
-h+='</div>';
-h+='<div class="card" style="text-align:left;margin:16px 0"><h3 style="font-size:.85rem;color:var(--cyan);margin-bottom:10px">📚 学習まとめ</h3><div style="font-size:.82rem;line-height:1.8">';
-h+='<p><strong style="color:var(--cyan)">① 制限酵素</strong>: 回文配列を認識してDNAを切断。2種類使えば方向性のある挿入が可能。</p>';
-h+='<p><strong style="color:var(--green)">② ベクター</strong>: ori + ampR + lacZ + 制限酵素サイト。<u>サイトの位置</u>がlacZ内であることが重要。</p>';
-h+='<p><strong style="color:var(--gold)">③ ライゲーション</strong>: DNAリガーゼで連結。組換え体・自己閉環・未反応断片が混在。</p>';
-h+='<p><strong style="color:var(--red)">④ ヒートショック</strong>: CaCl₂+42℃で膜透過性↑ → プラスミド導入。</p>';
-h+='<p><strong style="color:var(--magenta)">⑤ 培養</strong>: 37℃で最適増殖。ampR選択で非保持菌を除去。</p>';
-h+='<p><strong style="color:var(--blue)">⑥ 青白選択</strong>: LB/amp/X-gal/IPTG培地の白コロニー = lacZ破壊 = 遺伝子挿入候補。</p>';
-h+='<p style="margin-top:10px;color:var(--gold)">🧬 こうして作られた大腸菌が、糖尿病治療に不可欠なヒトインスリンを大量生産しています！</p>';
-h+='</div></div>';
-h+='<button class="btn primary" onclick="resetG()">🔄 もう一度挑戦</button>';
-el.innerHTML=h;}
-
-function resetG(){G.score=0;G.scores=[0,0,0,0,0,0];p1sel.clear();ligSel.clear();p2sel='';p6plate='';p6col='';hsStep=0;incTime=0;colonies5=[];showScreen('title');}
-document.addEventListener('touchend',function(e){if(e.target.tagName==='BUTTON'||e.target.classList.contains('opt-card')||e.target.classList.contains('colony')){e.preventDefault();}},{passive:false});
+if(p6col==='LBampXI-1'){playSound('complete');launchConfetti();G.scores[5]=50;G.score+=50;document.getElementById('p6fb').innerHTML='<button class="btn primary" id="btn-res">🏆 結果を見る</button>';addFastClick('btn-res',()=>showRes());}
+else{playSound('fail');}}
+function showRes(){showScreen('results');const total=G.scores.reduce((a,b)=>a+b,0);document.getElementById('resc').innerHTML='<h2>RESULT</h2><div style="font-size:3rem">'+total+'</div><button class="btn" onclick="location.reload()">🔄 TOPへ</button>';}
 </script>
 </body></html>
